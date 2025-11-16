@@ -1,12 +1,12 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link, useRouter } from 'expo-router';
 import { authService } from '@/services/auth';
+import { Link, useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -58,6 +58,15 @@ export default function HomeScreen() {
           onPress={() => router.push('/bus/bookings' as any)}
         >
           <ThemedText style={styles.busBookingText}>View Bus Bookings</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
+      <ThemedView style={styles.stepContainer}>
+        <TouchableOpacity
+          style={styles.attractionBookingButton}
+          onPress={() => router.push('/attractions/bookings' as any)}
+        >
+          <ThemedText style={styles.attractionBookingText}>View Attraction Bookings</ThemedText>
         </TouchableOpacity>
       </ThemedView>
 
@@ -152,6 +161,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   busBookingText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  attractionBookingButton: {
+    backgroundColor: '#8b5cf6',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  attractionBookingText: {
     color: '#fff',
     fontWeight: 'bold',
   },

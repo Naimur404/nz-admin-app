@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { authService } from '@/services/auth';
+import { useEffect, useState } from 'react';
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

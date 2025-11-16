@@ -1,5 +1,5 @@
+import { BusBookingDetailsResponse, BusBookingFilters, BusBookingResponse } from '../types/bus';
 import { apiClient } from './api';
-import { BusBookingFilters, BusBookingResponse, BusBookingDetailsResponse } from '../types/bus';
 
 export const busService = {
   async getBookings(filters: BusBookingFilters): Promise<BusBookingResponse> {

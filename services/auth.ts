@@ -1,6 +1,6 @@
-import { apiClient } from './api';
-import { LoginPayload, LoginResponse } from '../types/auth';
 import * as SecureStore from 'expo-secure-store';
+import { LoginPayload, LoginResponse } from '../types/auth';
+import { apiClient } from './api';
 
 export const authService = {
   async login(payload: LoginPayload): Promise<LoginResponse> {

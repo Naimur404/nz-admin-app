@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { busService } from '@/services/bus';
 import { bookingStatusService } from '@/services/booking-status';
-import { BusBooking, BusBookingFilters, BookingStatusMap } from '@/types/bus';
-import { Picker } from '@react-native-picker/picker';
+import { busService } from '@/services/bus';
+import { BookingStatusMap, BusBooking, BusBookingFilters } from '@/types/bus';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BusBookingsScreen() {
   const router = useRouter();

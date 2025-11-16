@@ -1,5 +1,5 @@
+import { BookingStatusMap, BookingStatusResponse } from '../types/bus';
 import { apiClient } from './api';
-import { BookingStatusResponse, BookingStatusMap } from '../types/bus';
 
 let bookingStatusCache: BookingStatusMap | null = null;
 
