@@ -1,4 +1,4 @@
-import { AttractionBookingsResponse } from '@/types/attraction';
+import { AttractionBookingsResponse, AttractionBookingDetailResponse } from '@/types/attraction';
 import { apiClient } from './api';
 
 interface GetAttractionBookingsParams {
@@ -28,6 +28,16 @@ export const attractionService = {
       return response.data;
     } catch (error) {
       console.error('Error fetching attraction bookings:', error);
+      throw error;
+    }
+  },
+
+  async getBookingDetails(bookingTransId: string): Promise<AttractionBookingDetailResponse> {
+    try {
+      const response = await apiClient.get<AttractionBookingDetailResponse>(`/attractions/bookings/${bookingTransId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching attraction booking details:', error);
       throw error;
     }
   },

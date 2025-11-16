@@ -27,6 +27,30 @@ export interface AttractionAgentInfo {
   logo: string;
 }
 
+export interface AttractionInfo {
+  ProductName: string;
+  PackageName: string;
+  Category: string;
+  VisitedDate: string;
+  TimeSlot: string;
+  Duration: number;
+  Inclusions: string[];
+  HowToUse: string[];
+  TermsAndConditions: string;
+  IsCancleable: boolean;
+  CancleablePolicy: string[];
+}
+
+export interface FareDetail {
+  Type: string;
+  DiscountPrice: number;
+  TotalPrice: number;
+  BasePrice: number;
+  Taxes: number;
+  Count: number;
+  FareCodeRef: string;
+}
+
 export interface AttractionBooking {
   booking_id: number;
   booking_trans_id: string;
@@ -65,6 +89,8 @@ export interface AttractionBooking {
   support_staff: string;
   agent_info: AttractionAgentInfo;
   passengers: AttractionPassenger[];
+  attraction_info?: AttractionInfo;
+  fare_details?: FareDetail[];
 }
 
 export interface AttractionBookingsResponse {
@@ -77,5 +103,12 @@ export interface AttractionBookingsResponse {
   total: number;
   from: number;
   to: number;
+  code: number;
+}
+
+export interface AttractionBookingDetailResponse {
+  success: boolean;
+  message: string;
+  data: AttractionBooking;
   code: number;
 }

@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
   (error) => {
     return Promise.reject(error);
   }
-
+);
 
 // Response interceptor for handling errors
 apiClient.interceptors.response.use(
@@ -49,4 +49,3 @@ export async function getAttractionBookingDetail(bookingTransId: string) {
     throw error.response?.data || error;
   }
 }
-);

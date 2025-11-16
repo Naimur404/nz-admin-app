@@ -46,8 +46,8 @@ export default function AttractionBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<AttractionFilters>({
-    from_date: new Date().toISOString().split('T')[0],
-    to_date: new Date().toISOString().split('T')[0],
+    from_date: '',
+    to_date: '',
     booking_id_or_pnr: '',
     agent_sl_or_name: '',
     status: '',
@@ -57,10 +57,13 @@ export default function AttractionBookingsScreen() {
 
   useEffect(() => {
     loadBookingStatuses();
+    loadBookings(); // Load all bookings initially
   }, []);
 
   useEffect(() => {
-    loadBookings();
+    if (filters.page > 1) { // Only load on page changes, not initial load
+      loadBookings();
+    }
   }, [filters.page]);
 
   const loadBookingStatuses = async () => {
@@ -166,7 +169,10 @@ export default function AttractionBookingsScreen() {
   };
 
   const renderBookingItem = ({ item }: { item: AttractionBooking }) => (
-    <TouchableOpacity style={styles.bookingCard}>
+    <TouchableOpacity 
+      style={styles.bookingCard}
+      onPress={() => router.push(`/attractions/booking-details?bookingTransId=${item.booking_trans_id}`)}
+    >
       <View style={styles.row}>
         <Text style={styles.label}>Booking ID:</Text>
         <View style={styles.bookingIdBadge}>
