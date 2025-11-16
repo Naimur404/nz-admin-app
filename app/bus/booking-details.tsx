@@ -85,7 +85,7 @@ export default function BookingDetailsScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Booking Details</Text>
-          <View style={styles.placeholder} />
+          <View style={styles.backButton} />
         </View>
       </SafeAreaView>
 

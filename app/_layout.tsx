@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { authService } from '@/services/auth';
+import { setAuthRedirectCallback } from '@/services/api';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -32,23 +33,39 @@ function useProtectedRoute(isAuthenticated: boolean, isLoading: boolean) {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Set up auth redirect callback for API interceptor
+    setAuthRedirectCallback(() => {
+      setIsAuthenticated(false);
+      router.replace('/auth/login' as any);
+    });
+    
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
     try {
       const token = await authService.getToken();
-      setIsAuthenticated(!!token);
+      const newAuthState = !!token;
+      setIsAuthenticated(newAuthState);
+      console.log('Auth check - Token exists:', newAuthState);
     } catch (error) {
+      console.log('Auth check error:', error);
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Re-check auth when app comes to foreground or after login
+  useEffect(() => {
+    const interval = setInterval(checkAuth, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   useProtectedRoute(isAuthenticated, isLoading);
 
@@ -60,9 +77,11 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
+        <Stack.Screen name="profile" options={{ headerShown: false, title: 'Profile' }} />
         <Stack.Screen name="bus/bookings" options={{ headerShown: false, title: 'Bus Bookings' }} />
         <Stack.Screen name="bus/booking-details" options={{ headerShown: false, title: 'Booking Details' }} />
         <Stack.Screen name="attractions/bookings" options={{ headerShown: false, title: 'Attraction Bookings' }} />
+        <Stack.Screen name="attractions/booking-details" options={{ headerShown: false, title: 'Attraction Booking Details' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>

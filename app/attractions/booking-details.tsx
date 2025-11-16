@@ -89,6 +89,7 @@ export default function AttractionBookingDetailsScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Attraction Booking Details</Text>
+          <View style={{ width: 24 }} />
         </View>
 
         <View style={styles.section}>
