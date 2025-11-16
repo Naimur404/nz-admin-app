@@ -18,15 +18,19 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/use-theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [ticketDataCount, setTicketDataCount] = useState<DataCountResponse | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-screenWidth * 0.8))[0];
+
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     loadProfile();
@@ -156,8 +160,8 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
         <TouchableOpacity onPress={openSidebar} style={styles.menuButton}>
           <Ionicons name="menu" size={24} color="#fff" />
         </TouchableOpacity>
@@ -174,11 +178,11 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.container}>
-        <ScrollView style={styles.content}>
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Welcome back!</Text>
-          <Text style={styles.welcomeSubtext}>{profile?.name}</Text>
+      <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+          <Text style={[styles.welcomeText, { color: isDark ? '#f3f4f6' : '#333' }]}>Welcome back!</Text>
+          <Text style={[styles.welcomeSubtext, { color: isDark ? '#9ca3af' : '#666' }]}>{profile?.name}</Text>
         </View>
 
         <View style={styles.statsContainer}>
@@ -359,6 +363,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    borderTopWidth: 0,
   },
   header: {
     backgroundColor: '#1e40af',
@@ -380,6 +385,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 20,
   },
   drawerContainer: {
     flex: 1,
@@ -446,8 +454,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   menuIcon: {
     width: 36,

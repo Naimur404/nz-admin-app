@@ -1,10 +1,11 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemeProvider } from '@/hooks/use-theme';
 import { setAuthRedirectCallback } from '@/services/api';
 import { authService } from '@/services/auth';
 
@@ -74,25 +75,27 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
-        <Stack.Screen name="profile" options={{ headerShown: false, title: 'Profile' }} />
-        <Stack.Screen name="bus/bookings" options={{ headerShown: false, title: 'Bus Bookings' }} />
-        <Stack.Screen name="bus/booking-details" options={{ headerShown: false, title: 'Booking Details' }} />
-        <Stack.Screen name="attractions/bookings" options={{ headerShown: false, title: 'Attraction Bookings' }} />
-        <Stack.Screen name="attractions/booking-details" options={{ headerShown: false, title: 'Attraction Booking Details' }} />
-        <Stack.Screen name="hotel/bookings" options={{ headerShown: false, title: 'Hotel Bookings' }} />
-        <Stack.Screen name="hotel/booking-details" options={{ headerShown: false, title: 'Hotel Booking Details' }} />
-        <Stack.Screen name="flight/bookings" options={{ headerShown: false, title: 'Flight Bookings' }} />
-        <Stack.Screen name="flight/office-bookings" options={{ headerShown: false, title: 'Office Flight Bookings' }} />
-        <Stack.Screen name="flight/agent-bookings" options={{ headerShown: false, title: 'Agent Flight Bookings' }} />
-        <Stack.Screen name="flight/booking-details" options={{ headerShown: false, title: 'Flight Booking Details' }} />
-        <Stack.Screen name="ticket-support" options={{ headerShown: false, title: 'Air Ticket Support' }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
+    <ThemeProvider>
+      <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
+          <Stack.Screen name="profile" options={{ headerShown: false, title: 'Profile' }} />
+          <Stack.Screen name="bus/bookings" options={{ headerShown: false, title: 'Bus Bookings' }} />
+          <Stack.Screen name="bus/booking-details" options={{ headerShown: false, title: 'Booking Details' }} />
+          <Stack.Screen name="attractions/bookings" options={{ headerShown: false, title: 'Attraction Bookings' }} />
+          <Stack.Screen name="attractions/booking-details" options={{ headerShown: false, title: 'Attraction Booking Details' }} />
+          <Stack.Screen name="hotel/bookings" options={{ headerShown: false, title: 'Hotel Bookings' }} />
+          <Stack.Screen name="hotel/booking-details" options={{ headerShown: false, title: 'Hotel Booking Details' }} />
+          <Stack.Screen name="flight/bookings" options={{ headerShown: false, title: 'Flight Bookings' }} />
+          <Stack.Screen name="flight/office-bookings" options={{ headerShown: false, title: 'Office Flight Bookings' }} />
+          <Stack.Screen name="flight/agent-bookings" options={{ headerShown: false, title: 'Agent Flight Bookings' }} />
+          <Stack.Screen name="flight/booking-details" options={{ headerShown: false, title: 'Flight Booking Details' }} />
+          <Stack.Screen name="ticket-support" options={{ headerShown: false, title: 'Air Ticket Support' }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </NavigationThemeProvider>
     </ThemeProvider>
   );
 }
