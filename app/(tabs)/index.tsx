@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/use-theme';
 import { profileService } from '@/services/profile';
 import { ticketSupportService } from '@/services/ticket-support';
 import { UserProfile } from '@/types/profile';
@@ -18,7 +19,6 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/use-theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
