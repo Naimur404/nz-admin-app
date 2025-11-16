@@ -2,20 +2,18 @@ import { profileService } from '@/services/profile';
 import { UserProfile } from '@/types/profile';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions, 
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    Modal,
-    Platform,
-    Animated,
-    Pressable,
-    Image,
+  Animated,
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
