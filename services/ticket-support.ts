@@ -1,5 +1,5 @@
+import { DataCountResponse, TicketSupportFilters, TicketSupportResponse } from '@/types/ticket-support';
 import { apiClient } from './api';
-import { TicketSupportResponse, TicketSupportFilters, DataCountResponse } from '@/types/ticket-support';
 
 export const ticketSupportService = {
   async getTicketSupport(filters: TicketSupportFilters = {} as TicketSupportFilters): Promise<TicketSupportResponse> {

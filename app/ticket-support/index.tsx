@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ticketSupportService } from '@/services/ticket-support';
 import { bookingStatusService } from '@/services/booking-status';
-import { TicketSupport, TicketSupportFilters, DataCountResponse } from '@/types/ticket-support';
+import { ticketSupportService } from '@/services/ticket-support';
+import { DataCountResponse, TicketSupport, TicketSupportFilters } from '@/types/ticket-support';
 
 export default function TicketSupportScreen() {
   const router = useRouter();
