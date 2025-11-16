@@ -1,6 +1,6 @@
-import { attractionService } from '@/services/attraction';
 import { bookingStatusService } from '@/services/booking-status';
-import { AttractionBooking } from '@/types/attraction';
+import { hotelService } from '@/services/hotel';
+import { HotelBooking, HotelBookingFilters } from '@/types/hotel';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -19,56 +19,40 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface AttractionFilters {
-  from_date: string;
-  to_date: string;
-  booking_id_or_pnr: string;
-  agent_sl_or_name: string;
-  status: string;
-  page: number;
-  per_page: number;
-}
-
-export default function AttractionBookingsScreen() {
+export default function HotelBookingsScreen() {
   const router = useRouter();
-  const [bookings, setBookings] = useState<AttractionBooking[]>([]);
+  const [bookings, setBookings] = useState<HotelBooking[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [statusOptions, setStatusOptions] = useState<Array<{ label: string; value: string }>>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
-  const [statusOptions, setStatusOptions] = useState<Array<{ label: string; value: string }>>([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pagination, setPagination] = useState({
     total: 0,
     currentPage: 1,
     lastPage: 1,
-    perPage: 15,
+    perPage: 10,
   });
 
   // Filter states
-  const [filters, setFilters] = useState<AttractionFilters>({
+  const [filters, setFilters] = useState<HotelBookingFilters>({
     from_date: '',
     to_date: '',
     booking_id_or_pnr: '',
-    agent_sl_or_name: '',
+    api_id: '',
+    staff_id: '',
     status: '',
     page: 1,
-    per_page: 15,
+    per_page: 10,
+    platform_type: '',
+    agent_sl_or_name: '',
   });
 
   useEffect(() => {
     loadBookingStatuses();
     loadBookings(); // Load all bookings initially
-    setIsInitialLoad(false);
   }, []);
-
-  // Remove the page change effect since we're using infinite scroll
-  // useEffect(() => {
-  //   if (!isInitialLoad) {
-  //     loadBookings(); // Load bookings whenever page changes (after initial load)
-  //   }
-  // }, [filters.page]);
 
   const loadBookingStatuses = async () => {
     try {
@@ -81,51 +65,28 @@ export default function AttractionBookingsScreen() {
   };
 
   const loadBookings = async (isLoadMore = false) => {
-    if (isLoadMore) {
-      setIsLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
-    
-    try {
-      const response = await attractionService.getBookings(filters);
-      
-      if (isLoadMore) {
-        // Append new data to existing bookings, avoiding duplicates
-        setBookings(prev => {
-          const existingIds = new Set(prev.map(item => item.booking_id));
-          const newBookings = response.data.filter(item => !existingIds.has(item.booking_id));
-          return [...prev, ...newBookings];
-        });
-      } else {
-        // Replace with new data (for search/filter)
-        setBookings(response.data);
-      }
-      
-      setPagination({
-        total: response.total,
-        currentPage: response.current_page,
-        lastPage: response.last_page,
-        perPage: response.per_page,
-      });
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to load bookings');
-    } finally {
-      setLoading(false);
-      setIsLoadingMore(false);
-    }
+    await loadBookingsWithFilters(filters, isLoadMore);
   };
 
   const handleSearch = () => {
-    setFilters({ ...filters, page: 1 });
-    loadBookings(); // Reset to first page and load
+    // Reset pagination and clear bookings for new search
+    setBookings([]);
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 10,
+    });
+    
+    // Load bookings with current filters
+    const searchFilters = { ...filters, page: 1 };
+    setFilters(searchFilters);
+    loadBookingsWithFilters(searchFilters);
   };
 
   const handleLoadMore = () => {
     if (!isLoadingMore && pagination.currentPage < pagination.lastPage) {
-      const nextPage = pagination.currentPage + 1;
-      setFilters({ ...filters, page: nextPage });
-      loadBookings(true); // Load more data
+      loadBookingsWithFilters(filters, true); // Load more data
     }
   };
 
@@ -134,16 +95,73 @@ export default function AttractionBookingsScreen() {
       from_date: '',
       to_date: '',
       booking_id_or_pnr: '',
-      agent_sl_or_name: '',
+      api_id: '',
+      staff_id: '',
       status: '',
       page: 1,
-      per_page: 15,
+      per_page: 10,
+      platform_type: '',
+      agent_sl_or_name: '',
     };
+    
+    // Clear existing bookings and reset pagination immediately
+    setBookings([]);
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 10,
+    });
+    
+    // Update filters and load bookings with reset filters
     setFilters(resetFilters);
-    setBookings([]); // Clear existing bookings
+    
+    // Load bookings with the reset filters directly
     setTimeout(() => {
-      loadBookings();
+      loadBookingsWithFilters(resetFilters);
     }, 100);
+  };
+
+  // Helper function to load bookings with specific filters
+  const loadBookingsWithFilters = async (filterParams: HotelBookingFilters, isLoadMore = false) => {
+    if (isLoadMore) {
+      setIsLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
+    try {
+      const requestParams = {
+        ...filterParams,
+        page: isLoadMore ? pagination.currentPage + 1 : 1,
+      };
+      
+      const response = await hotelService.getBookings(requestParams);
+      
+      if (isLoadMore) {
+        // Append new data to existing bookings, avoiding duplicates
+        setBookings(prev => {
+          const existingIds = new Set(prev.map(item => item.id));
+          const newBookings = response.data.filter((item: HotelBooking) => !existingIds.has(item.id));
+          return [...prev, ...newBookings];
+        });
+      } else {
+        // Replace with new data (for search/filter)
+        setBookings(response.data);
+      }
+      
+      setPagination({
+        total: response.dataCount,
+        currentPage: response.current_page,
+        lastPage: response.last_page,
+        perPage: response.to - response.from + 1,
+      });
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to load bookings');
+    } finally {
+      setLoading(false);
+      setIsLoadingMore(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -159,27 +177,27 @@ export default function AttractionBookingsScreen() {
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return '#10b981';
-      case 'PENDING':
-        return '#f59e0b';
-      case 'CANCELED':
+        return { backgroundColor: '#10b981' };
       case 'CANCELLED':
-        return '#ef4444';
+      case 'VOID':
+        return { backgroundColor: '#ef4444' };
+      case 'FAILED':
+        return { backgroundColor: '#f59e0b' };
+      case 'PENDING':
+        return { backgroundColor: '#6b7280' };
       default:
-        return '#6b7280';
+        return { backgroundColor: '#6b7280' };
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Attraction':
-        return '#8b5cf6';
-      case 'Tours':
-        return '#06b6d4';
-      case 'F&B':
-        return '#f97316';
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case 'B2B':
+        return { backgroundColor: '#3b82f6' };
+      case 'B2C':
+        return { backgroundColor: '#8b5cf6' };
       default:
-        return '#3b82f6';
+        return { backgroundColor: '#6b7280' };
     }
   };
 
@@ -199,79 +217,69 @@ export default function AttractionBookingsScreen() {
     }
   };
 
-  const renderBookingItem = ({ item }: { item: AttractionBooking }) => (
+  const renderBookingItem = ({ item }: { item: HotelBooking }) => (
     <TouchableOpacity 
       style={styles.bookingCard}
-      onPress={() => router.push(`/attractions/booking-details?bookingTransId=${item.booking_trans_id}`)}
+      onPress={() => router.push({ pathname: '/hotel/booking-details', params: { transactionId: item.unique_trans_id } })}
     >
+      <View style={styles.row}>
+        <Text style={styles.label}>Booking Date:</Text>
+        <Text style={styles.value}>{formatDate(item.booking_date)}</Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Agent Name:</Text>
+        <Text style={styles.value} numberOfLines={2}>
+          {item.agent_name}({item.agent_sl_no})
+        </Text>
+      </View>
+
       <View style={styles.row}>
         <Text style={styles.label}>Booking ID:</Text>
         <View style={styles.bookingIdBadge}>
-          <Text style={styles.bookingIdText}>{item.booking_trans_id}</Text>
+          <Text style={styles.bookingIdText}>{item.unique_trans_id}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>PNR:</Text>
-        <Text style={styles.pnrValue}>{item.pnr}</Text>
+        <Text style={styles.label}>Brand:</Text>
+        <Text style={styles.value}>{item.api_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Product:</Text>
-        <Text style={styles.value}>{item.product_name}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Package:</Text>
-        <Text style={styles.value}>{item.package_name}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Category:</Text>
-        <View style={[styles.brandBadge, { backgroundColor: getCategoryColor(item.category) }]}>
-          <Text style={styles.brandText}>{item.category}</Text>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
-        <View style={[styles.brandBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.brandText}>{item.status}</Text>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Visit Date:</Text>
-        <Text style={styles.value}>{formatDate(item.visited_date)}</Text>
-      </View>
-
-      {item.time_slot && (
-        <View style={styles.row}>
-          <Text style={styles.label}>Time Slot:</Text>
-          <Text style={styles.value}>{item.time_slot}</Text>
-        </View>
-      )}
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Passengers:</Text>
-        <Text style={styles.value}>{item.total_passengers}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Agent:</Text>
-        <Text style={styles.value}>{item.agent_info.agent_name}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.label}>Amount:</Text>
+        <Text style={styles.label}>Cost:</Text>
         <Text style={[styles.value, styles.profit]}>
           {item.currency} {parseFloat(item.total_price_selling).toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.created_at)}</Text>
+        <Text style={styles.label}>Payment:</Text>
+        <Text style={styles.value}>{item.payment_method}</Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Platform Type:</Text>
+        <View style={[styles.platformBadge, getPlatformColor(item.platform_type)]}>
+          <Text style={styles.platformText}>{item.platform_type}</Text>
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Status:</Text>
+        <View style={[styles.statusBadge, getStatusColor(item.status)]}>
+          <Text style={styles.statusText}>{item.status}</Text>
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Check In:</Text>
+        <Text style={styles.value}>{formatDate(item.check_in)}</Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Check Out:</Text>
+        <Text style={styles.value}>{formatDate(item.check_out)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -283,7 +291,7 @@ export default function AttractionBookingsScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Attraction Bookings</Text>
+          <Text style={styles.headerTitle}>Hotel Bookings</Text>
           <TouchableOpacity
             style={styles.filterToggle}
             onPress={() => setShowFilters(!showFilters)}
@@ -346,7 +354,7 @@ export default function AttractionBookingsScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Booking ID / PNR</Text>
+              <Text style={styles.filterLabel}>Booking ID</Text>
               <TextInput
                 style={styles.input}
                 value={filters.booking_id_or_pnr}
@@ -370,6 +378,23 @@ export default function AttractionBookingsScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
+              <Text style={styles.filterLabel}>Platform Type</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={filters.platform_type || ''}
+                  onValueChange={(value) => setFilters({ ...filters, platform_type: value })}
+                  style={styles.picker}
+                  mode="dropdown"
+                  dropdownIconColor="#666"
+                >
+                  <Picker.Item label="All Platforms" value="" />
+                  <Picker.Item label="B2B" value="B2B" />
+                  <Picker.Item label="B2C" value="B2C" />
+                </Picker>
+              </View>
+            </View>
+
+            <View style={styles.filterItem}>
               <Text style={styles.filterLabel}>Status</Text>
               <View style={styles.pickerContainer}>
                 <Picker
@@ -380,13 +405,11 @@ export default function AttractionBookingsScreen() {
                   dropdownIconColor="#666"
                 >
                   <Picker.Item label="All Statuses" value="" />
-                  {statusOptions.map((option) => (
-                    <Picker.Item
-                      key={option.value}
-                      label={option.label}
-                      value={option.value}
-                    />
-                  ))}
+                  <Picker.Item label="CONFIRMED" value="CONFIRMED" />
+                  <Picker.Item label="CANCELLED" value="CANCELLED" />
+                  <Picker.Item label="FAILED" value="FAILED" />
+                  <Picker.Item label="VOID" value="VOID" />
+                  <Picker.Item label="PENDING" value="PENDING" />
                 </Picker>
               </View>
             </View>
@@ -412,13 +435,13 @@ export default function AttractionBookingsScreen() {
           <FlatList
             data={bookings}
             renderItem={renderBookingItem}
-            keyExtractor={(item, index) => `booking-${item.booking_id}-${index}`}
+            keyExtractor={(item, index) => `booking-${item.id}-${index}`}
             contentContainerStyle={styles.listContainer}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.1}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No bookings found</Text>
+                <Text style={styles.emptyText}>No hotel bookings found</Text>
               </View>
             }
             ListFooterComponent={() => 
@@ -455,6 +478,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  headerButton: {
+    padding: 4,
   },
   filterToggle: {
     flexDirection: 'row',
@@ -580,16 +606,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#333',
     fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
-  },
-  pnrValue: {
-    fontSize: 10,
-    color: '#333',
-    fontWeight: '600',
     flex: 1.5,
     textAlign: 'right',
-    lineHeight: 14,
   },
   profit: {
     color: '#10b981',
@@ -605,12 +623,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
-  brandBadge: {
+  statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  brandText: {
+  statusText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  platformBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  platformText: {
     color: '#fff',
     fontSize: 11,
     fontWeight: 'bold',
@@ -633,13 +661,5 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 14,
     color: '#666',
-  },
-  headerButton: {
-    padding: 4,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
 });

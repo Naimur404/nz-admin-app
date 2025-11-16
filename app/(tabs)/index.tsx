@@ -96,6 +96,12 @@ export default function HomeScreen() {
         } else if (route === '/attractions/bookings') {
           console.log('Navigating to attractions bookings');
           router.navigate('/attractions/bookings');
+        } else if (route === '/hotel/bookings') {
+          console.log('Navigating to hotel bookings');
+          router.navigate('/hotel/bookings');
+        } else if (route === '/flight/bookings') {
+          console.log('Navigating to flight bookings');
+          router.navigate('/flight/bookings');
         } else {
           // For not yet implemented routes
           console.log('Route not implemented yet:', route);
@@ -209,16 +215,28 @@ export default function HomeScreen() {
               <Text style={styles.actionSubtitle}>View attraction bookings</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/hotel/bookings' as any)}
+            >
+              <Ionicons name="bed" size={32} color="#10b981" />
+              <Text style={styles.actionTitle}>Hotels</Text>
+              <Text style={styles.actionSubtitle}>Manage hotel bookings</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.actionCard}>
               <Ionicons name="bar-chart" size={32} color="#ef4444" />
               <Text style={styles.actionTitle}>Reports</Text>
               <Text style={styles.actionSubtitle}>View analytics</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard}>
-              <Ionicons name="people" size={32} color="#06b6d4" />
-              <Text style={styles.actionTitle}>Agents</Text>
-              <Text style={styles.actionSubtitle}>Manage agents</Text>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/flight/bookings' as any)}
+            >
+              <Ionicons name="airplane" size={32} color="#f59e0b" />
+              <Text style={styles.actionTitle}>Flights</Text>
+              <Text style={styles.actionSubtitle}>Manage flight bookings</Text>
             </TouchableOpacity>
           </View>
         </View>

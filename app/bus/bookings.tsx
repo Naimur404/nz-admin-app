@@ -24,6 +24,7 @@ export default function BusBookingsScreen() {
   const router = useRouter();
   const [bookings, setBookings] = useState<BusBooking[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [statuses, setStatuses] = useState<BookingStatusMap>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
@@ -64,11 +65,28 @@ export default function BusBookingsScreen() {
     }
   };
 
-  const loadBookings = async () => {
-    setLoading(true);
+  const loadBookings = async (isLoadMore = false) => {
+    if (isLoadMore) {
+      setIsLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await busService.getBookings(filters);
-      setBookings(response.data);
+      
+      if (isLoadMore) {
+        // Append new data to existing bookings, avoiding duplicates
+        setBookings(prev => {
+          const existingIds = new Set(prev.map(item => item.id));
+          const newBookings = response.data.filter(item => !existingIds.has(item.id));
+          return [...prev, ...newBookings];
+        });
+      } else {
+        // Replace with new data (for search/filter)
+        setBookings(response.data);
+      }
+      
       setPagination({
         total: response.total,
         currentPage: response.current_page,
@@ -79,12 +97,21 @@ export default function BusBookingsScreen() {
       Alert.alert('Error', error.response?.data?.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
   const handleSearch = () => {
     setFilters({ ...filters, page: 1 });
     loadBookings();
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && pagination.currentPage < pagination.lastPage) {
+      const nextPage = pagination.currentPage + 1;
+      setFilters({ ...filters, page: nextPage });
+      loadBookings(true); // Load more data
+    }
   };
 
   const handleReset = () => {
@@ -99,6 +126,7 @@ export default function BusBookingsScreen() {
       per_page: 15,
     };
     setFilters(resetFilters);
+    setBookings([]); // Clear existing bookings
     // Trigger search with reset filters
     setTimeout(() => loadBookings(), 100);
   };
@@ -193,11 +221,11 @@ export default function BusBookingsScreen() {
       <View style={styles.row}>
         <Text style={styles.label}>Status:</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
-        <Text style={styles.statusText}>{item.status}</Text>
+          <Text style={styles.statusText}>{item.status}</Text>
+        </View>
       </View>
-    </View>
-  </TouchableOpacity>
-);  const getStatusColor = (status: string) => {
+    </TouchableOpacity>
+  );  const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
         return { backgroundColor: '#10b981' };
@@ -336,6 +364,8 @@ export default function BusBookingsScreen() {
                     selectedValue={filters.status || ''}
                     onValueChange={(value: string) => setFilters({ ...filters, status: value })}
                     style={styles.picker}
+                    mode="dropdown"
+                    dropdownIconColor="#666"
                   >
                     <Picker.Item label="All Statuses" value="" />
                     {Object.entries(statuses).map(([key, value]) => (
@@ -365,53 +395,27 @@ export default function BusBookingsScreen() {
         </View>
       ) : (
         <>
-          <View style={styles.paginationInfo}>
-            <Text style={styles.paginationText}>
-              Showing {bookings.length} of {pagination.total} bookings
-            </Text>
-            <Text style={styles.paginationText}>
-              Page {pagination.currentPage} of {pagination.lastPage}
-            </Text>
-          </View>
-
           <FlatList
             data={bookings}
             renderItem={renderBookingItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => `booking-${item.id}-${index}`}
             contentContainerStyle={styles.listContainer}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>No bookings found</Text>
               </View>
             }
+            ListFooterComponent={() => 
+              isLoadingMore ? (
+                <View style={styles.loadMoreContainer}>
+                  <ActivityIndicator size="small" color="#1e40af" />
+                  <Text style={styles.loadMoreText}>Loading more...</Text>
+                </View>
+              ) : null
+            }
           />
-
-          {pagination.lastPage > 1 && (
-            <View style={styles.paginationContainer}>
-              <TouchableOpacity
-                style={[styles.pageButton, pagination.currentPage === 1 && styles.pageButtonDisabled]}
-                onPress={() => setFilters({ ...filters, page: pagination.currentPage - 1 })}
-                disabled={pagination.currentPage === 1}
-              >
-                <Text style={styles.pageButtonText}>Previous</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.pageText}>
-                {pagination.currentPage} / {pagination.lastPage}
-              </Text>
-
-              <TouchableOpacity
-                style={[
-                  styles.pageButton,
-                  pagination.currentPage === pagination.lastPage && styles.pageButtonDisabled,
-                ]}
-                onPress={() => setFilters({ ...filters, page: pagination.currentPage + 1 })}
-                disabled={pagination.currentPage === pagination.lastPage}
-              >
-                <Text style={styles.pageButtonText}>Next</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </>
       )}
     </View>
@@ -497,9 +501,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     overflow: 'hidden',
+    minHeight: 50,
   },
   picker: {
-    height: 40,
+    height: 50,
+    backgroundColor: 'transparent',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -625,33 +631,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
   },
-  paginationContainer: {
+  loadMoreContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    padding: 20,
+    gap: 8,
   },
-  pageButton: {
-    backgroundColor: '#1e40af',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  pageButtonDisabled: {
-    backgroundColor: '#cbd5e1',
-  },
-  pageButtonText: {
-    color: '#fff',
+  loadMoreText: {
     fontSize: 14,
-    fontWeight: '600',
-  },
-  pageText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    color: '#666',
   },
   headerButton: {
     padding: 4,
