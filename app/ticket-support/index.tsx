@@ -17,13 +17,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { bookingStatusService } from '@/services/booking-status';
-import { ticketSupportService } from '@/services/ticket-support';
 import { apiListService } from '@/services/api-list';
+import { bookingStatusService } from '@/services/booking-status';
 import { marketService } from '@/services/market';
 import { staffService } from '@/services/staff';
-import { DataCountResponse, TicketSupport, TicketSupportFilters } from '@/types/ticket-support';
+import { ticketSupportService } from '@/services/ticket-support';
 import { OptionItem } from '@/types/common';
+import { DataCountResponse, TicketSupport, TicketSupportFilters } from '@/types/ticket-support';
 
 export default function TicketSupportScreen() {
   const router = useRouter();

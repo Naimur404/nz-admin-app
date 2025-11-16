@@ -1,5 +1,5 @@
+import { OptionItem, StaffItem, StaffListResponse } from '@/types/common';
 import { apiClient } from './api';
-import { StaffListResponse, StaffItem, OptionItem } from '@/types/common';
 
 class StaffService {
   async getStaffList(): Promise<StaffItem[]> {
