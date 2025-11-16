@@ -82,6 +82,13 @@ export default function RootLayout() {
         <Stack.Screen name="bus/booking-details" options={{ headerShown: false, title: 'Booking Details' }} />
         <Stack.Screen name="attractions/bookings" options={{ headerShown: false, title: 'Attraction Bookings' }} />
         <Stack.Screen name="attractions/booking-details" options={{ headerShown: false, title: 'Attraction Booking Details' }} />
+        <Stack.Screen name="hotel/bookings" options={{ headerShown: false, title: 'Hotel Bookings' }} />
+        <Stack.Screen name="hotel/booking-details" options={{ headerShown: false, title: 'Hotel Booking Details' }} />
+        <Stack.Screen name="flight/bookings" options={{ headerShown: false, title: 'Flight Bookings' }} />
+        <Stack.Screen name="flight/office-bookings" options={{ headerShown: false, title: 'Office Flight Bookings' }} />
+        <Stack.Screen name="flight/agent-bookings" options={{ headerShown: false, title: 'Agent Flight Bookings' }} />
+        <Stack.Screen name="flight/booking-details" options={{ headerShown: false, title: 'Flight Booking Details' }} />
+        <Stack.Screen name="ticket-support" options={{ headerShown: false, title: 'Air Ticket Support' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>

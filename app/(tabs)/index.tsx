@@ -64,6 +64,12 @@ export default function HomeScreen() {
       color: '#f59e0b',
     },
     {
+      title: 'Air Ticket Support',
+      icon: 'headset-outline',
+      route: '/ticket-support',
+      color: '#8b5cf6',
+    },
+    {
       title: 'Reports',
       icon: 'bar-chart-outline',
       route: '/reports',
@@ -102,6 +108,9 @@ export default function HomeScreen() {
         } else if (route === '/flight/bookings') {
           console.log('Navigating to flight bookings');
           router.navigate('/flight/bookings');
+        } else if (route === '/ticket-support') {
+          console.log('Navigating to ticket support');
+          router.navigate('/ticket-support');
         } else {
           // For not yet implemented routes
           console.log('Route not implemented yet:', route);
@@ -237,6 +246,15 @@ export default function HomeScreen() {
               <Ionicons name="airplane" size={32} color="#f59e0b" />
               <Text style={styles.actionTitle}>Flights</Text>
               <Text style={styles.actionSubtitle}>Manage flight bookings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/ticket-support' as any)}
+            >
+              <Ionicons name="headset" size={32} color="#8b5cf6" />
+              <Text style={styles.actionTitle}>Ticket Support</Text>
+              <Text style={styles.actionSubtitle}>Air ticket assistance</Text>
             </TouchableOpacity>
           </View>
         </View>
