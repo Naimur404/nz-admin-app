@@ -1,13 +1,37 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import { authService } from '@/services/auth';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await authService.logout();
+            router.replace('/auth/login' as any);
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -21,6 +45,22 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
+      
+      <ThemedView style={styles.stepContainer}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <ThemedText style={styles.logoutText}>Logout</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
+      <ThemedView style={styles.stepContainer}>
+        <TouchableOpacity
+          style={styles.busBookingButton}
+          onPress={() => router.push('/bus/bookings' as any)}
+        >
+          <ThemedText style={styles.busBookingText}>View Bus Bookings</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
@@ -94,5 +134,25 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  logoutButton: {
+    backgroundColor: '#ef4444',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  busBookingButton: {
+    backgroundColor: '#1e40af',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  busBookingText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
