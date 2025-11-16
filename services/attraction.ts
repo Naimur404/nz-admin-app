@@ -1,4 +1,4 @@
-import { AttractionBookingsResponse, AttractionBookingDetailResponse } from '@/types/attraction';
+import { AttractionBookingDetailResponse, AttractionBookingsResponse } from '@/types/attraction';
 import { apiClient } from './api';
 
 interface GetAttractionBookingsParams {
