@@ -19,7 +19,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { bookingStatusService } from '@/services/booking-status';
 import { ticketSupportService } from '@/services/ticket-support';
+import { apiListService } from '@/services/api-list';
+import { marketService } from '@/services/market';
+import { staffService } from '@/services/staff';
 import { DataCountResponse, TicketSupport, TicketSupportFilters } from '@/types/ticket-support';
+import { OptionItem } from '@/types/common';
 
 export default function TicketSupportScreen() {
   const router = useRouter();
@@ -28,6 +32,12 @@ export default function TicketSupportScreen() {
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [statusOptions, setStatusOptions] = useState<Array<{label: string, value: string}>>([]);
+  const [apiOptions, setApiOptions] = useState<OptionItem[]>([]);
+  const [marketOptions, setMarketOptions] = useState<OptionItem[]>([]);
+  const [staffOptions, setStaffOptions] = useState<OptionItem[]>([]);
+  const [filteredStaffOptions, setFilteredStaffOptions] = useState<OptionItem[]>([]);
+  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
+  const [staffSearchText, setStaffSearchText] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showFromDate, setShowFromDate] = useState(false);
   const [showToDate, setShowToDate] = useState(false);
@@ -67,7 +77,10 @@ export default function TicketSupportScreen() {
       await Promise.all([
         loadTicketSupports(),
         loadDataCount(),
-        loadStatusOptions()
+        loadStatusOptions(),
+        loadApiOptions(),
+        loadMarketOptions(),
+        loadStaffOptions()
       ]);
     } catch (error) {
       console.error('Error loading initial data:', error);
@@ -135,6 +148,34 @@ export default function TicketSupportScreen() {
     }
   };
 
+  const loadApiOptions = async () => {
+    try {
+      const options = await apiListService.getApiOptions();
+      setApiOptions(options);
+    } catch (error) {
+      console.error('Error loading API options:', error);
+    }
+  };
+
+  const loadMarketOptions = async () => {
+    try {
+      const options = await marketService.getMarketOptions();
+      setMarketOptions(options);
+    } catch (error) {
+      console.error('Error loading market options:', error);
+    }
+  };
+
+  const loadStaffOptions = async () => {
+    try {
+      const options = await staffService.getStaffOptions();
+      setStaffOptions(options);
+      setFilteredStaffOptions(options);
+    } catch (error) {
+      console.error('Error loading staff options:', error);
+    }
+  };
+
   const loadTicketSupportsWithFilters = (newFilters: TicketSupportFilters) => {
     setFilters(newFilters);
     loadTicketSupports();
@@ -176,6 +217,31 @@ export default function TicketSupportScreen() {
     loadTicketSupports();
   };
 
+  const handleStaffSearch = (text: string) => {
+    setStaffSearchText(text);
+    if (text.trim() === '') {
+      setFilteredStaffOptions(staffOptions);
+    } else {
+      const filtered = staffOptions.filter(staff =>
+        staff.label.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredStaffOptions(filtered);
+    }
+  };
+
+  const handleStaffSelect = (staff: OptionItem) => {
+    setFilters({ ...filters, staff: staff.value.toString() });
+    setStaffSearchText(staff.label);
+    setShowStaffDropdown(false);
+  };
+
+  const handleStaffInputFocus = () => {
+    setShowStaffDropdown(true);
+    if (staffSearchText === '') {
+      setFilteredStaffOptions(staffOptions);
+    }
+  };
+
   const handleReset = () => {
     const today = new Date().toISOString().split('T')[0];
     const resetFilters: TicketSupportFilters = {
@@ -203,6 +269,9 @@ export default function TicketSupportScreen() {
     });
     
     setFilters(resetFilters);
+    setStaffSearchText('');
+    setFilteredStaffOptions(staffOptions);
+    setShowStaffDropdown(false);
     
     setTimeout(() => {
       loadTicketSupports();
@@ -263,6 +332,39 @@ export default function TicketSupportScreen() {
     }
   };
 
+  const getPaymentStatusColor = (paymentStatus: string) => {
+    switch (paymentStatus.toUpperCase()) {
+      case 'PAID':
+      case 'COMPLETED':
+      case 'SUCCESS':
+        return { backgroundColor: '#10b981' };
+      case 'PENDING':
+        return { backgroundColor: '#f59e0b' };
+      case 'FAILED':
+      case 'CANCELLED':
+        return { backgroundColor: '#ef4444' };
+      case 'PARTIAL':
+        return { backgroundColor: '#8b5cf6' };
+      default:
+        return { backgroundColor: '#6b7280' };
+    }
+  };
+
+  const getBookingIdColor = (bookingId: string) => {
+    // Generate consistent color based on booking ID
+    const colors = [
+      '#3b82f6', // Blue
+      '#10b981', // Green
+      '#f59e0b', // Orange
+      '#8b5cf6', // Purple
+      '#ef4444', // Red
+      '#06b6d4', // Cyan
+    ];
+    
+    const hash = bookingId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return { backgroundColor: colors[hash % colors.length] };
+  };
+
   const renderTicketSupportItem = ({ item }: { item: TicketSupport }) => (
     <TouchableOpacity 
       style={styles.ticketCard}
@@ -302,7 +404,9 @@ export default function TicketSupportScreen() {
 
       <View style={styles.row}>
         <Text style={styles.label}>Booking ID | PNR:</Text>
-        <Text style={styles.value}>{item.booking_trans_id} | {item.pnr || 'N/A'}</Text>
+        <View style={[styles.bookingIdBadge, getBookingIdColor(item.booking_trans_id)]}>
+          <Text style={styles.bookingIdText}>{item.booking_trans_id} | {item.pnr || 'N/A'}</Text>
+        </View>
       </View>
 
       <View style={styles.row}>
@@ -317,7 +421,9 @@ export default function TicketSupportScreen() {
 
       <View style={styles.row}>
         <Text style={styles.label}>Payment:</Text>
-        <Text style={styles.value}>{item.payment_status}</Text>
+        <View style={[styles.paymentBadge, getPaymentStatusColor(item.payment_status)]}>
+          <Text style={styles.paymentText}>{item.payment_status}</Text>
+        </View>
       </View>
 
       <View style={styles.row}>
@@ -375,34 +481,13 @@ export default function TicketSupportScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Summary Statistics */}
+      {/* Summary Text */}
       {dataCount && (
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.summaryContainer}
-        >
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Pax</Text>
-            <Text style={styles.summaryValue}>{dataCount.total_pax || 0}</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Segment</Text>
-            <Text style={styles.summaryValue}>{dataCount.total_segment || 0}</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Reissue Pax</Text>
-            <Text style={styles.summaryValue}>{dataCount.total_reissue_pax || 0}</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Flight Info</Text>
-            <Text style={styles.summaryValue}>{dataCount.flight_info}</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Cancel Request</Text>
-            <Text style={styles.summaryValue}>{dataCount.cancel_request}</Text>
-          </View>
-        </ScrollView>
+        <View style={styles.summaryTextContainer}>
+          <Text style={styles.summaryText}>
+            Booking {pagination.total}, Pax: {dataCount.total_pax || 0}, Segment: {dataCount.total_segment || 0}, Reissue Pax: {dataCount.total_reissue_pax || 0}
+          </Text>
+        </View>
       )}
 
       {showFilters && (
@@ -520,6 +605,83 @@ export default function TicketSupportScreen() {
             </View>
           </View>
 
+          <View style={styles.filterRow}>
+            <View style={styles.filterItem}>
+              <Text style={styles.filterLabel}>API</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={filters.api_id}
+                  onValueChange={(itemValue) => setFilters({ ...filters, api_id: itemValue })}
+                  style={styles.picker}
+                  mode="dropdown"
+                  dropdownIconColor="#666"
+                >
+                  <Picker.Item label="All APIs" value="" />
+                  {apiOptions.map((api) => (
+                    <Picker.Item key={api.value} label={api.label} value={api.value} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            <View style={styles.filterItem}>
+              <Text style={styles.filterLabel}>Market</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={filters.market_id}
+                  onValueChange={(itemValue) => setFilters({ ...filters, market_id: itemValue })}
+                  style={styles.picker}
+                  mode="dropdown"
+                  dropdownIconColor="#666"
+                >
+                  <Picker.Item label="All Markets" value="" />
+                  {marketOptions.map((market) => (
+                    <Picker.Item key={market.value} label={market.label} value={market.value} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.filterRow}>
+            <View style={styles.filterItem}>
+              <Text style={styles.filterLabel}>Staff</Text>
+              <View style={styles.staffContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={staffSearchText}
+                  onChangeText={handleStaffSearch}
+                  onFocus={handleStaffInputFocus}
+                  placeholder="Search staff by name or email..."
+                  placeholderTextColor="#999"
+                />
+                {showStaffDropdown && filteredStaffOptions.length > 0 && (
+                  <ScrollView style={styles.staffDropdown} nestedScrollEnabled>
+                    {filteredStaffOptions.map((staff) => (
+                      <TouchableOpacity
+                        key={staff.value}
+                        style={styles.staffOption}
+                        onPress={() => handleStaffSelect(staff)}
+                      >
+                        <Text style={styles.staffOptionText}>{staff.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+                {showStaffDropdown && (
+                  <TouchableOpacity
+                    style={styles.dropdownOverlay}
+                    onPress={() => setShowStaffDropdown(false)}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.filterItem}>
+              {/* Empty space for alignment */}
+            </View>
+          </View>
+
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
               <Text style={styles.buttonText}>Reset</Text>
@@ -616,30 +778,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  summaryContainer: {
+  summaryTextContainer: {
     backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 12,
+    marginVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  summaryCard: {
-    backgroundColor: '#f8f9fa',
-    padding: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    alignItems: 'center',
-    minWidth: 85,
-  },
-  summaryLabel: {
-    fontSize: 10,
-    color: '#6b7280',
-    marginBottom: 2,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  summaryValue: {
+  summaryText: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: '#1e40af',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   filterContainer: {
     backgroundColor: '#fff',
@@ -726,13 +879,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContainer: {
-    padding: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 0,
   },
   ticketCard: {
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 8,
+    marginHorizontal: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -757,6 +912,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
+  },
+  bookingIdBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  bookingIdText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  paymentBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  paymentText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -802,5 +977,43 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 14,
     color: '#666',
+  },
+  staffContainer: {
+    position: 'relative',
+    zIndex: 1000,
+  },
+  staffDropdown: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 6,
+    maxHeight: 200,
+    zIndex: 1001,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  staffOption: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  staffOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
   },
 });

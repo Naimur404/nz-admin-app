@@ -1,5 +1,7 @@
 import { profileService } from '@/services/profile';
+import { ticketSupportService } from '@/services/ticket-support';
 import { UserProfile } from '@/types/profile';
+import { DataCountResponse } from '@/types/ticket-support';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -22,11 +24,13 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function HomeScreen() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [ticketDataCount, setTicketDataCount] = useState<DataCountResponse | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-screenWidth * 0.8))[0];
 
   useEffect(() => {
     loadProfile();
+    loadTicketDataCount();
   }, []);
 
   const loadProfile = async () => {
@@ -35,6 +39,15 @@ export default function HomeScreen() {
       setProfile(response.data);
     } catch (error) {
       console.error('Error loading profile:', error);
+    }
+  };
+
+  const loadTicketDataCount = async () => {
+    try {
+      const response = await ticketSupportService.getDataCount();
+      setTicketDataCount(response);
+    } catch (error) {
+      console.error('Error loading ticket data count:', error);
     }
   };
 
@@ -253,7 +266,12 @@ export default function HomeScreen() {
               onPress={() => router.push('/ticket-support' as any)}
             >
               <Ionicons name="headset" size={32} color="#8b5cf6" />
-              <Text style={styles.actionTitle}>Ticket Support</Text>
+              <View style={styles.actionTitleContainer}>
+                <Text style={styles.actionTitle}>Ticket Support</Text>
+                {ticketDataCount && (
+                  <Text style={styles.actionBadge}>({ticketDataCount.ticket_in_process})</Text>
+                )}
+              </View>
               <Text style={styles.actionSubtitle}>Air ticket assistance</Text>
             </TouchableOpacity>
           </View>
@@ -296,7 +314,12 @@ export default function HomeScreen() {
                       <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
                         <Ionicons name={item.icon as any} size={20} color="#fff" />
                       </View>
-                      <Text style={styles.menuText}>{item.title}</Text>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>{item.title}</Text>
+                        {item.route === '/ticket-support' && ticketDataCount && (
+                          <Text style={styles.menuBadge}>({ticketDataCount.ticket_in_process})</Text>
+                        )}
+                      </View>
                       <Ionicons name="chevron-forward" size={20} color="#666" />
                     </TouchableOpacity>
                   ))}
@@ -434,10 +457,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  menuTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   menuText: {
     fontSize: 16,
     color: '#333',
-    flex: 1,
+  },
+  menuBadge: {
+    fontSize: 14,
+    color: '#8b5cf6',
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   welcomeSection: {
     backgroundColor: '#fff',
@@ -520,12 +553,22 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  actionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+  },
   actionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginTop: 8,
-    marginBottom: 4,
+  },
+  actionBadge: {
+    fontSize: 14,
+    color: '#8b5cf6',
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   actionSubtitle: {
     fontSize: 12,
