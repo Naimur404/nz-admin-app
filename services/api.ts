@@ -24,6 +24,8 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     const token = await SecureStore.getItemAsync('access_token');
+    console.log('API Base URL:', API_BASE_URL);
+    console.log('Request URL:', `${API_BASE_URL}${config.url}`);
     console.log('Token retrieved:', token ? 'Token exists' : 'No token found');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

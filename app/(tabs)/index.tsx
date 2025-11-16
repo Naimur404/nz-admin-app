@@ -1,25 +1,31 @@
+import { profileService } from '@/services/profile';
+import { UserProfile } from '@/types/profile';
 import { Ionicons } from '@expo/vector-icons';
-import { DrawerLayoutAndroid } from 'react-native';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState, useEffect } from 'react';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
+    Dimensions, 
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    Modal,
+    Platform,
+    Animated,
+    Pressable,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { profileService } from '@/services/profile';
-import { UserProfile } from '@/types/profile';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
-  const drawer = useRef<DrawerLayoutAndroid>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const slideAnim = useState(new Animated.Value(-screenWidth * 0.8))[0];
 
   useEffect(() => {
     loadProfile();
@@ -80,175 +86,219 @@ export default function HomeScreen() {
   ];
 
   const handleMenuPress = (route: string) => {
-    drawer.current?.closeDrawer();
-    if (route === '/bus/bookings' || route === '/attractions/bookings') {
-      router.push(route as any);
-    } else {
-      // For not yet implemented routes
-      console.log('Navigating to:', route);
-    }
+    console.log('Menu item clicked:', route);
+    closeSidebar();
+    
+    // Use a timeout to ensure sidebar closes before navigation
+    setTimeout(() => {
+      try {
+        if (route === '/bus/bookings') {
+          console.log('Navigating to bus bookings');
+          router.navigate('/bus/bookings');
+        } else if (route === '/attractions/bookings') {
+          console.log('Navigating to attractions bookings');
+          router.navigate('/attractions/bookings');
+        } else {
+          // For not yet implemented routes
+          console.log('Route not implemented yet:', route);
+          alert('This feature is coming soon!');
+        }
+      } catch (error) {
+        console.error('Navigation error:', error);
+        alert('Navigation failed. Please try again.');
+      }
+    }, 300);
   };
 
-  const openDrawer = () => {
-    drawer.current?.openDrawer();
+  const openSidebar = () => {
+    setSidebarVisible(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
   };
 
-  const navigationView = () => (
-    <View style={styles.drawerContainer}>
-      <View style={styles.drawerHeader}>
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={24} color="#fff" />
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{profile?.name || 'Loading...'}</Text>
-            <Text style={styles.profileEmail}>{profile?.email || ''}</Text>
-            <Text style={styles.profileType}>{profile?.user_type?.toUpperCase() || ''}</Text>
-          </View>
-        </View>
-      </View>
-
-      <ScrollView style={styles.drawerContent}>
-        <View style={styles.menuSection}>
-          <Text style={styles.menuSectionTitle}>MAIN MENU</Text>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={() => handleMenuPress(item.route)}
-            >
-              <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
-                <Ionicons name={item.icon as any} size={20} color="#fff" />
-              </View>
-              <Text style={styles.menuText}>{item.title}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#666" />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.menuSection}>
-          <Text style={styles.menuSectionTitle}>ACCOUNT</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => {
-              drawer.current?.closeDrawer();
-              router.push('/profile' as any);
-            }}
-          >
-            <View style={[styles.menuIcon, { backgroundColor: '#3b82f6' }]}>
-              <Ionicons name="person-outline" size={20} color="#fff" />
-            </View>
-            <Text style={styles.menuText}>Profile</Text>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
-  );
+  const closeSidebar = () => {
+    Animated.timing(slideAnim, {
+      toValue: -screenWidth * 0.8,
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => {
+      setSidebarVisible(false);
+    });
+  };
 
   return (
-    <DrawerLayoutAndroid
-      ref={drawer}
-      drawerWidth={screenWidth * 0.75}
-      drawerPosition={'left'}
-      renderNavigationView={navigationView}
-    >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={openDrawer} style={styles.menuButton}>
-            <Ionicons name="menu" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>NZ Admin</Text>
-          <TouchableOpacity
-            onPress={() => router.push('/profile' as any)}
-            style={styles.profileButton}
-          >
-            <Ionicons name="person-circle-outline" size={28} color="#fff" />
-          </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={openSidebar} style={styles.menuButton}>
+          <Ionicons name="menu" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Image 
+          source={require('@/assets/images/mynztrip-white.png')} 
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
+        <TouchableOpacity
+          onPress={() => router.push('/profile' as any)}
+          style={styles.profileButton}
+        >
+          <Ionicons name="person-circle-outline" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.container}>
+        <ScrollView style={styles.content}>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>Welcome back!</Text>
+          <Text style={styles.welcomeSubtext}>{profile?.name}</Text>
         </View>
 
-        <ScrollView style={styles.content}>
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
-            <Text style={styles.welcomeSubtext}>{profile?.name}</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Ionicons name="bus" size={24} color="#1e40af" />
+            </View>
+            <Text style={styles.statNumber}>150</Text>
+            <Text style={styles.statLabel}>Bus Bookings</Text>
           </View>
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <View style={styles.statIcon}>
-                <Ionicons name="bus" size={24} color="#1e40af" />
-              </View>
-              <Text style={styles.statNumber}>150</Text>
-              <Text style={styles.statLabel}>Bus Bookings</Text>
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Ionicons name="camera" size={24} color="#8b5cf6" />
             </View>
-
-            <View style={styles.statCard}>
-              <View style={styles.statIcon}>
-                <Ionicons name="camera" size={24} color="#8b5cf6" />
-              </View>
-              <Text style={styles.statNumber}>89</Text>
-              <Text style={styles.statLabel}>Attractions</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <View style={styles.statIcon}>
-                <Ionicons name="bed" size={24} color="#10b981" />
-              </View>
-              <Text style={styles.statNumber}>45</Text>
-              <Text style={styles.statLabel}>Hotels</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <View style={styles.statIcon}>
-                <Ionicons name="airplane" size={24} color="#f59e0b" />
-              </View>
-              <Text style={styles.statNumber}>120</Text>
-              <Text style={styles.statLabel}>Flights</Text>
-            </View>
+            <Text style={styles.statNumber}>89</Text>
+            <Text style={styles.statLabel}>Attractions</Text>
           </View>
 
-          <View style={styles.quickActions}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            
-            <View style={styles.actionGrid}>
-              <TouchableOpacity
-                style={styles.actionCard}
-                onPress={() => router.push('/bus/bookings' as any)}
-              >
-                <Ionicons name="bus" size={32} color="#1e40af" />
-                <Text style={styles.actionTitle}>Bus Bookings</Text>
-                <Text style={styles.actionSubtitle}>Manage bus reservations</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionCard}
-                onPress={() => router.push('/attractions/bookings' as any)}
-              >
-                <Ionicons name="camera" size={32} color="#8b5cf6" />
-                <Text style={styles.actionTitle}>Attractions</Text>
-                <Text style={styles.actionSubtitle}>View attraction bookings</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.actionCard}>
-                <Ionicons name="bar-chart" size={32} color="#ef4444" />
-                <Text style={styles.actionTitle}>Reports</Text>
-                <Text style={styles.actionSubtitle}>View analytics</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.actionCard}>
-                <Ionicons name="people" size={32} color="#06b6d4" />
-                <Text style={styles.actionTitle}>Agents</Text>
-                <Text style={styles.actionSubtitle}>Manage agents</Text>
-              </TouchableOpacity>
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Ionicons name="bed" size={24} color="#10b981" />
             </View>
+            <Text style={styles.statNumber}>45</Text>
+            <Text style={styles.statLabel}>Hotels</Text>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </DrawerLayoutAndroid>
+
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Ionicons name="airplane" size={24} color="#f59e0b" />
+            </View>
+            <Text style={styles.statNumber}>120</Text>
+            <Text style={styles.statLabel}>Flights</Text>
+          </View>
+        </View>
+
+        <View style={styles.quickActions}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          
+          <View style={styles.actionGrid}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/bus/bookings' as any)}
+            >
+              <Ionicons name="bus" size={32} color="#1e40af" />
+              <Text style={styles.actionTitle}>Bus Bookings</Text>
+              <Text style={styles.actionSubtitle}>Manage bus reservations</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/attractions/bookings' as any)}
+            >
+              <Ionicons name="camera" size={32} color="#8b5cf6" />
+              <Text style={styles.actionTitle}>Attractions</Text>
+              <Text style={styles.actionSubtitle}>View attraction bookings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionCard}>
+              <Ionicons name="bar-chart" size={32} color="#ef4444" />
+              <Text style={styles.actionTitle}>Reports</Text>
+              <Text style={styles.actionSubtitle}>View analytics</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionCard}>
+              <Ionicons name="people" size={32} color="#06b6d4" />
+              <Text style={styles.actionTitle}>Agents</Text>
+              <Text style={styles.actionSubtitle}>Manage agents</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+      </View>
+
+      {/* Sidebar Modal */}
+      <Modal
+        transparent={true}
+        visible={sidebarVisible}
+        onRequestClose={closeSidebar}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View style={[styles.sidebarContainer, { transform: [{ translateX: slideAnim }] }]}>
+            <Pressable style={styles.sidebarContent} onPress={() => {}}>
+              <View style={styles.drawerHeader}>
+                <View style={styles.profileSection}>
+                  <View style={styles.avatar}>
+                    <Ionicons name="person" size={24} color="#fff" />
+                  </View>
+                  <View style={styles.profileInfo}>
+                    <Text style={styles.profileName}>{profile?.name || 'User'}</Text>
+                    <Text style={styles.profileEmail}>{profile?.email || 'No email'}</Text>
+                    <Text style={styles.profileType}>{profile?.user_type?.toUpperCase() || 'USER'}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <ScrollView style={styles.drawerContent}>
+                <View style={styles.menuSection}>
+                  <Text style={styles.menuSectionTitle}>MAIN MENU</Text>
+                  {menuItems.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.menuItem}
+                      onPress={() => handleMenuPress(item.route)}
+                    >
+                      <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
+                        <Ionicons name={item.icon as any} size={20} color="#fff" />
+                      </View>
+                      <Text style={styles.menuText}>{item.title}</Text>
+                      <Ionicons name="chevron-forward" size={20} color="#666" />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <View style={styles.menuSection}>
+                  <Text style={styles.menuSectionTitle}>ACCOUNT</Text>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => {
+                      closeSidebar();
+                      router.push('/profile' as any);
+                    }}
+                  >
+                    <View style={[styles.menuIcon, { backgroundColor: '#3b82f6' }]}>
+                      <Ionicons name="person-outline" size={20} color="#fff" />
+                    </View>
+                    <Text style={styles.menuText}>Profile</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </Pressable>
+          </Animated.View>
+          <Pressable style={styles.modalBackdrop} onPress={closeSidebar} />
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#1e40af',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -264,10 +314,9 @@ const styles = StyleSheet.create({
   menuButton: {
     padding: 8,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+  headerLogo: {
+    height: 35,
+    width: 120,
   },
   profileButton: {
     padding: 4,
@@ -448,5 +497,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  sidebarContainer: {
+    width: screenWidth * 0.8,
+    backgroundColor: '#fff',
+    height: '100%',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    zIndex: 2,
+  },
+  sidebarContent: {
+    flex: 1,
   },
 });

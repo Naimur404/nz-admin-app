@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { authService } from '@/services/auth';
 import { setAuthRedirectCallback } from '@/services/api';
+import { authService } from '@/services/auth';
 
 export const unstable_settings = {
   anchor: '(tabs)',

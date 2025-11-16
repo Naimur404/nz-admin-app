@@ -29,10 +29,26 @@ export default function ProfileScreen() {
     setLoading(true);
     setError(null);
     try {
+      console.log('Starting profile fetch...');
       const response = await profileService.getUserProfile();
-      setProfile(response.data);
+      console.log('Profile API Response:', JSON.stringify(response, null, 2));
+      console.log('Profile data:', response.data || response);
+      
+      // Check if response has the expected structure
+      if (response && response.data) {
+        setProfile(response.data);
+      } else if (response) {
+        // If response doesn't have .data property, use response directly
+        setProfile(response as any);
+      } else {
+        console.error('No response data received');
+        setError('No profile data received from server');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load profile');
+      console.error('Profile load error:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      setError(err.response?.data?.message || err.message || 'Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -121,18 +137,16 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          <Text style={styles.name}>{profile?.name}</Text>
-          <Text style={styles.userType}>{profile?.user_type?.toUpperCase()}</Text>
+          <Text style={styles.name}>{profile?.name || 'No Name'}</Text>
+          <Text style={styles.userType}>{profile?.user_type?.toUpperCase() || 'USER'}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Information</Text>
-          
           <View style={styles.infoRow}>
             <Ionicons name="mail-outline" size={20} color="#666" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>{profile?.email}</Text>
+              <Text style={styles.infoValue}>{profile?.email || 'Not provided'}</Text>
             </View>
           </View>
 
@@ -140,50 +154,14 @@ export default function ProfileScreen() {
             <Ionicons name="call-outline" size={20} color="#666" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Contact</Text>
-              <Text style={styles.infoValue}>{profile?.contact}</Text>
+              <Text style={styles.infoValue}>{profile?.contact || 'Not provided'}</Text>
             </View>
           </View>
 
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Country</Text>
-              <Text style={styles.infoValue}>{profile?.country_code}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="business-outline" size={20} color="#666" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Panel</Text>
-              <Text style={styles.infoValue}>{profile?.panel}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="shield-outline" size={20} color="#666" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Vendor Access</Text>
-              <Text style={styles.infoValue}>
-                {profile?.is_vendor_allowed ? 'Allowed' : 'Not Allowed'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
-          
-          <TouchableOpacity style={styles.actionRow} onPress={loadProfile}>
-            <Ionicons name="refresh-outline" size={20} color="#1e40af" />
-            <Text style={styles.actionText}>Refresh Profile</Text>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionRow} onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutRow} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-            <Text style={[styles.actionText, { color: '#ef4444' }]}>Logout</Text>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
+            <Text style={styles.logoutText}>Logout</Text>
+            <Ionicons name="chevron-forward" size={20} color="#ef4444" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -326,6 +304,21 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     color: '#333',
+    fontWeight: '500',
+    marginLeft: 12,
+    flex: 1,
+  },
+  logoutRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  logoutText: {
+    fontSize: 16,
+    color: '#ef4444',
     fontWeight: '500',
     marginLeft: 12,
     flex: 1,
