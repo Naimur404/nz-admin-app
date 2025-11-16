@@ -41,25 +41,8 @@ export default function LoginScreen() {
 
       const response = await authService.login(payload);
       
-      // Show success message
-      Alert.alert(
-        'Login Successful', 
-        'Welcome! Redirecting to dashboard...',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate to home immediately after user acknowledges success
-              router.replace('/(tabs)');
-            }
-          }
-        ]
-      );
-      
-      // Also set a timeout as fallback to ensure navigation happens
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 1500);
+      // Navigate immediately without alert
+      router.replace('/(tabs)');
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';

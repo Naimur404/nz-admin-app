@@ -186,97 +186,97 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <View style={styles.statIcon}>
               <Ionicons name="bus" size={24} color="#1e40af" />
             </View>
-            <Text style={styles.statNumber}>150</Text>
-            <Text style={styles.statLabel}>Bus Bookings</Text>
+            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>150</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Bus Bookings</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <View style={styles.statIcon}>
               <Ionicons name="camera" size={24} color="#8b5cf6" />
             </View>
-            <Text style={styles.statNumber}>89</Text>
-            <Text style={styles.statLabel}>Attractions</Text>
+            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>89</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Attractions</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <View style={styles.statIcon}>
               <Ionicons name="bed" size={24} color="#10b981" />
             </View>
-            <Text style={styles.statNumber}>45</Text>
-            <Text style={styles.statLabel}>Hotels</Text>
+            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>45</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Hotels</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <View style={styles.statIcon}>
               <Ionicons name="airplane" size={24} color="#f59e0b" />
             </View>
-            <Text style={styles.statNumber}>120</Text>
-            <Text style={styles.statLabel}>Flights</Text>
+            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>120</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Flights</Text>
           </View>
         </View>
 
         <View style={styles.quickActions}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Quick Actions</Text>
           
           <View style={styles.actionGrid}>
             <TouchableOpacity
-              style={styles.actionCard}
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/bus/bookings' as any)}
             >
               <Ionicons name="bus" size={32} color="#1e40af" />
-              <Text style={styles.actionTitle}>Bus Bookings</Text>
-              <Text style={styles.actionSubtitle}>Manage bus reservations</Text>
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Bus Bookings</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Manage bus reservations</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.actionCard}
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/attractions/bookings' as any)}
             >
               <Ionicons name="camera" size={32} color="#8b5cf6" />
-              <Text style={styles.actionTitle}>Attractions</Text>
-              <Text style={styles.actionSubtitle}>View attraction bookings</Text>
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Attractions</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>View attraction bookings</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.actionCard}
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/hotel/bookings' as any)}
             >
               <Ionicons name="bed" size={32} color="#10b981" />
-              <Text style={styles.actionTitle}>Hotels</Text>
-              <Text style={styles.actionSubtitle}>Manage hotel bookings</Text>
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Hotels</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Manage hotel bookings</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard}>
+            <TouchableOpacity style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
               <Ionicons name="bar-chart" size={32} color="#ef4444" />
-              <Text style={styles.actionTitle}>Reports</Text>
-              <Text style={styles.actionSubtitle}>View analytics</Text>
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Reports</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>View analytics</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.actionCard}
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/flight/bookings' as any)}
             >
               <Ionicons name="airplane" size={32} color="#f59e0b" />
-              <Text style={styles.actionTitle}>Flights</Text>
-              <Text style={styles.actionSubtitle}>Manage flight bookings</Text>
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Flights</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Manage flight bookings</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.actionCard}
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/ticket-support' as any)}
             >
               <Ionicons name="headset" size={32} color="#8b5cf6" />
               <View style={styles.actionTitleContainer}>
-                <Text style={styles.actionTitle}>Ticket Support</Text>
+                <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Ticket Support</Text>
                 {ticketDataCount && (
                   <Text style={styles.actionBadge}>({ticketDataCount.ticket_in_process})</Text>
                 )}
               </View>
-              <Text style={styles.actionSubtitle}>Air ticket assistance</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Air ticket assistance</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -291,9 +291,9 @@ export default function HomeScreen() {
         animationType="none"
       >
         <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.sidebarContainer, { transform: [{ translateX: slideAnim }] }]}>
+          <Animated.View style={[styles.sidebarContainer, { backgroundColor: isDark ? '#1f2937' : '#fff', transform: [{ translateX: slideAnim }] }]}>
             <Pressable style={styles.sidebarContent} onPress={() => {}}>
-              <View style={styles.drawerHeader}>
+              <View style={[styles.drawerHeader, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
                 <View style={styles.profileSection}>
                   <View style={styles.avatar}>
                     <Ionicons name="person" size={24} color="#fff" />
@@ -308,7 +308,7 @@ export default function HomeScreen() {
 
               <ScrollView style={styles.drawerContent}>
                 <View style={styles.menuSection}>
-                  <Text style={styles.menuSectionTitle}>MAIN MENU</Text>
+                  <Text style={[styles.menuSectionTitle, { color: isDark ? '#9ca3af' : '#666' }]}>MAIN MENU</Text>
                   {menuItems.map((item, index) => (
                     <TouchableOpacity
                       key={index}
@@ -319,18 +319,18 @@ export default function HomeScreen() {
                         <Ionicons name={item.icon as any} size={20} color="#fff" />
                       </View>
                       <View style={styles.menuTextContainer}>
-                        <Text style={styles.menuText}>{item.title}</Text>
+                        <Text style={[styles.menuText, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.title}</Text>
                         {item.route === '/ticket-support' && ticketDataCount && (
                           <Text style={styles.menuBadge}>({ticketDataCount.ticket_in_process})</Text>
                         )}
                       </View>
-                      <Ionicons name="chevron-forward" size={20} color="#666" />
+                      <Ionicons name="chevron-forward" size={20} color={isDark ? '#9ca3af' : '#666'} />
                     </TouchableOpacity>
                   ))}
                 </View>
 
                 <View style={styles.menuSection}>
-                  <Text style={styles.menuSectionTitle}>ACCOUNT</Text>
+                  <Text style={[styles.menuSectionTitle, { color: isDark ? '#9ca3af' : '#666' }]}>ACCOUNT</Text>
                   <TouchableOpacity
                     style={styles.menuItem}
                     onPress={() => {
@@ -341,8 +341,8 @@ export default function HomeScreen() {
                     <View style={[styles.menuIcon, { backgroundColor: '#3b82f6' }]}>
                       <Ionicons name="person-outline" size={20} color="#fff" />
                     </View>
-                    <Text style={styles.menuText}>Profile</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                    <Text style={[styles.menuText, { color: isDark ? '#f3f4f6' : '#333' }]}>Profile</Text>
+                    <Ionicons name="chevron-forward" size={20} color={isDark ? '#9ca3af' : '#666'} />
                   </TouchableOpacity>
                 </View>
               </ScrollView>
