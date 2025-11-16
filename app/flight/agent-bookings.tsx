@@ -1,6 +1,7 @@
 import { bookingStatusService } from '@/services/booking-status';
 import { flightService } from '@/services/flight';
 import { FlightBooking, FlightBookingFilters } from '@/types/flight';
+import { getTodayLocalDate } from '@/utils/date';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -36,19 +37,22 @@ export default function AgentFlightBookingsScreen() {
   });
 
   // Filter states
-  const [filters, setFilters] = useState<FlightBookingFilters>({
-    agent_sl_or_name: '',
-    airline_name: '',
-    api_id: '',
-    booking_id_or_pnr: '',
-    from_date: '',
-    market_id: null,
-    page: 1,
-    per_page: 10,
-    staff: '',
-    status: '',
-    ticket_no: '',
-    to_date: '',
+  const [filters, setFilters] = useState<FlightBookingFilters>(() => {
+    const today = getTodayLocalDate();
+    return {
+      agent_sl_or_name: '',
+      airline_name: '',
+      api_id: '',
+      booking_id_or_pnr: '',
+      from_date: today, // Local timezone today's date
+      market_id: null,
+      page: 1,
+      per_page: 10,
+      staff: '',
+      status: '',
+      ticket_no: '',
+      to_date: today,   // Local timezone today's date
+    };
   });
 
   useEffect(() => {
@@ -135,19 +139,20 @@ export default function AgentFlightBookingsScreen() {
   };
 
   const handleReset = () => {
+    const today = getTodayLocalDate();
     const resetFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: '',
+      from_date: today, // Local timezone today's date
       market_id: null,
       page: 1,
       per_page: 10,
       staff: '',
       status: '',
       ticket_no: '',
-      to_date: '',
+      to_date: today,   // Local timezone today's date
     };
     
     // Clear existing bookings and reset pagination immediately

@@ -1,11 +1,24 @@
 import { BusBookingDetailsResponse, BusBookingFilters, BusBookingResponse } from '../types/bus';
+import { getTodayLocalDate, logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const busService = {
   async getBookings(filters: BusBookingFilters): Promise<BusBookingResponse> {
     try {
+      // Always use local timezone today's date
+      const today = logDateInfo('Bus Bookings');
+      
+      // Override date filters with today's date
+      const finalFilters = {
+        ...filters,
+        from_date: today, // Always send today's date (local timezone)
+        to_date: today,   // Always send today's date (local timezone)
+      };
+      
+      console.log('Final bus booking request filters:', finalFilters);
+      
       const response = await apiClient.get<BusBookingResponse>('/bus/bookings', {
-        params: filters,
+        params: finalFilters,
       });
       
       return response.data;

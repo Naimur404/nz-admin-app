@@ -3,6 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import { getTodayLocalDate } from '@/utils/date';
 import {
     ActivityIndicator,
     Alert,
@@ -29,6 +30,12 @@ export default function TicketSupportScreen() {
   const router = useRouter();
   const [ticketSupports, setTicketSupports] = useState<TicketSupport[]>([]);
   const [dataCount, setDataCount] = useState<DataCountResponse | null>(null);
+  const [ticketStats, setTicketStats] = useState({
+    dataCount: 0,
+    total_pax: 0, 
+    total_segment: 0,
+    total_reissue_pax: 0
+  });
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [statusOptions, setStatusOptions] = useState<Array<{label: string, value: string}>>([]);
@@ -49,13 +56,14 @@ export default function TicketSupportScreen() {
   });
 
   const [filters, setFilters] = useState<TicketSupportFilters>(() => {
-    const today = new Date().toISOString().split('T')[0];
+    // Always set today's date using local timezone for UI display
+    const today = getTodayLocalDate();
     return {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today,
+      from_date: today, // Show today's date in UI (local timezone)
       market_id: '',
       page: 1,
       per_page: 20,
@@ -63,7 +71,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: today,
+      to_date: today, // Show today's date in UI (local timezone)
     };
   });
 
@@ -71,12 +79,22 @@ export default function TicketSupportScreen() {
     loadInitialData();
   }, []);
 
+  // Ensure dates are always current using local timezone
+  useEffect(() => {
+    const today = getTodayLocalDate();
+    
+    setFilters(prev => ({
+      ...prev,
+      from_date: today,
+      to_date: today
+    }));
+  }, []); // Run once on mount to ensure fresh dates
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
       await Promise.all([
         loadTicketSupports(),
-        loadDataCount(),
         loadStatusOptions(),
         loadApiOptions(),
         loadMarketOptions(),
@@ -117,6 +135,18 @@ export default function TicketSupportScreen() {
         lastPage: response.last_page || 1,
         perPage: 20,
       });
+
+      // Set ticket stats from the main response
+      const newTicketStats = {
+        dataCount: response.dataCount || 0,
+        total_pax: response.total_pax || 0,
+        total_segment: response.total_segment || 0,
+        total_reissue_pax: response.total_reissue_pax || 0
+      };
+      
+      console.log('Setting ticket stats:', newTicketStats);
+      console.log('API response dataCount:', response.dataCount);
+      setTicketStats(newTicketStats);
     } catch (error) {
       console.error('Error loading ticket supports:', error);
       Alert.alert('Error', 'Failed to load ticket support data');
@@ -242,14 +272,16 @@ export default function TicketSupportScreen() {
     }
   };
 
-  const handleReset = () => {
-    const today = new Date().toISOString().split('T')[0];
+  const handleReset = async () => {
+    // Always set today's date using local timezone for UI display
+    const today = getTodayLocalDate();
+    
     const resetFilters: TicketSupportFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today,
+      from_date: today, // Show today's date in UI (local timezone)
       market_id: '',
       page: 1,
       per_page: 20,
@@ -257,7 +289,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: today,
+      to_date: today, // Show today's date in UI (local timezone)
     };
     
     setTicketSupports([]);
@@ -482,10 +514,10 @@ export default function TicketSupportScreen() {
       </SafeAreaView>
 
       {/* Summary Text */}
-      {dataCount && (
+      {ticketStats.dataCount > 0 && (
         <View style={styles.summaryTextContainer}>
           <Text style={styles.summaryText}>
-            Booking {pagination.total}, Pax: {dataCount.total_pax || 0}, Segment: {dataCount.total_segment || 0}, Reissue Pax: {dataCount.total_reissue_pax || 0}
+            Booking {ticketStats.dataCount}, Pax: {ticketStats.total_pax}, Segment: {ticketStats.total_segment}, Reissue Pax: {ticketStats.total_reissue_pax}
           </Text>
         </View>
       )}
@@ -548,7 +580,7 @@ export default function TicketSupportScreen() {
                 onPress={() => setShowFromDate(true)}
               >
                 <Text style={styles.dateText}>
-                  {filters.from_date || 'Select date'}
+                  {filters.from_date}
                 </Text>
                 <Ionicons name="calendar-outline" size={20} color="#666" />
               </TouchableOpacity>
@@ -561,7 +593,7 @@ export default function TicketSupportScreen() {
                 onPress={() => setShowToDate(true)}
               >
                 <Text style={styles.dateText}>
-                  {filters.to_date || 'Select date'}
+                  {filters.to_date}
                 </Text>
                 <Ionicons name="calendar-outline" size={20} color="#666" />
               </TouchableOpacity>

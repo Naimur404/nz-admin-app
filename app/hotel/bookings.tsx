@@ -1,6 +1,7 @@
 import { bookingStatusService } from '@/services/booking-status';
 import { hotelService } from '@/services/hotel';
 import { HotelBooking, HotelBookingFilters } from '@/types/hotel';
+import { getTodayLocalDate } from '@/utils/date';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -36,17 +37,20 @@ export default function HotelBookingsScreen() {
   });
 
   // Filter states
-  const [filters, setFilters] = useState<HotelBookingFilters>({
-    from_date: '',
-    to_date: '',
-    booking_id_or_pnr: '',
-    api_id: '',
-    staff_id: '',
-    status: '',
-    page: 1,
-    per_page: 10,
-    platform_type: '',
-    agent_sl_or_name: '',
+  const [filters, setFilters] = useState<HotelBookingFilters>(() => {
+    const today = getTodayLocalDate();
+    return {
+      from_date: today, // Local timezone today's date
+      to_date: today,   // Local timezone today's date
+      booking_id_or_pnr: '',
+      api_id: '',
+      staff_id: '',
+      status: '',
+      page: 1,
+      per_page: 10,
+      platform_type: '',
+      agent_sl_or_name: '',
+    };
   });
 
   useEffect(() => {
@@ -91,9 +95,10 @@ export default function HotelBookingsScreen() {
   };
 
   const handleReset = () => {
+    const today = getTodayLocalDate();
     const resetFilters = {
-      from_date: '',
-      to_date: '',
+      from_date: today, // Local timezone today's date
+      to_date: today,   // Local timezone today's date
       booking_id_or_pnr: '',
       api_id: '',
       staff_id: '',

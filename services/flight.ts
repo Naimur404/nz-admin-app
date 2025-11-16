@@ -1,6 +1,7 @@
 import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { FlightBookingFilters, FlightBookingsResponse, FlightBookingType } from '@/types/flight';
 import { FlightBookingDetailsResponse } from '@/types/flight-details';
+import { getTodayLocalDate, logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 import { bookingStatusService } from './booking-status';
 
@@ -8,6 +9,9 @@ export const flightService = {
   async getBookings(type: FlightBookingType, filters: FlightBookingFilters = {}): Promise<FlightBookingsResponse> {
     try {
       console.log(`Getting ${type} flight bookings with filters:`, filters);
+      
+      // Always use local timezone today's date
+      const today = logDateInfo(`Flight Bookings (${type})`);
       
       // Convert status string to index if status filter is provided
       let statusValue = filters.status || '';
@@ -26,16 +30,18 @@ export const flightService = {
         airline_name: filters.airline_name || '',
         api_id: filters.api_id || '',
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
-        from_date: filters.from_date || '',
+        from_date: today,  // Always send today's date (local timezone)
         market_id: filters.market_id || null,
         page: filters.page || 1,
         per_page: filters.per_page || 10,
         staff: filters.staff || '',
         status: statusValue,
         ticket_no: filters.ticket_no || '',
-        to_date: filters.to_date || '',
+        to_date: today,    // Always send today's date (local timezone)
       };
 
+      console.log(`Final ${type} flight booking request data:`, requestData);
+      
       const endpoint = `/admin/my-booking/${type}`;
       const response = await apiClient.post(endpoint, requestData);
       console.log(`${type} flight bookings response:`, response.data);

@@ -1,6 +1,7 @@
 import { attractionService } from '@/services/attraction';
 import { bookingStatusService } from '@/services/booking-status';
 import { AttractionBooking } from '@/types/attraction';
+import { getTodayLocalDate } from '@/utils/date';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -47,14 +48,17 @@ export default function AttractionBookingsScreen() {
   });
 
   // Filter states
-  const [filters, setFilters] = useState<AttractionFilters>({
-    from_date: '',
-    to_date: '',
-    booking_id_or_pnr: '',
-    agent_sl_or_name: '',
-    status: '',
-    page: 1,
-    per_page: 15,
+  const [filters, setFilters] = useState<AttractionFilters>(() => {
+    const today = getTodayLocalDate();
+    return {
+      from_date: today, // Local timezone today's date
+      to_date: today,   // Local timezone today's date
+      booking_id_or_pnr: '',
+      agent_sl_or_name: '',
+      status: '',
+      page: 1,
+      per_page: 15,
+    };
   });
 
   useEffect(() => {
@@ -130,9 +134,10 @@ export default function AttractionBookingsScreen() {
   };
 
   const handleReset = () => {
+    const today = getTodayLocalDate();
     const resetFilters = {
-      from_date: '',
-      to_date: '',
+      from_date: today, // Local timezone today's date
+      to_date: today,   // Local timezone today's date
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       status: '',

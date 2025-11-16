@@ -1,4 +1,5 @@
 import { HotelBookingDetails, HotelBookingFilters, HotelBookingsResponse } from '@/types/hotel';
+import { getTodayLocalDate, logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const hotelService = {
@@ -6,9 +7,12 @@ export const hotelService = {
     try {
       console.log('Getting hotel bookings with filters:', filters);
       
+      // Always use local timezone today's date
+      const today = logDateInfo('Hotel Bookings');
+      
       const requestData = {
-        from_date: filters.from_date || '',
-        to_date: filters.to_date || '',
+        from_date: today,  // Always send today's date (local timezone)
+        to_date: today,    // Always send today's date (local timezone)
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
         api_id: filters.api_id || '',
         staff_id: filters.staff_id || '',
@@ -19,6 +23,8 @@ export const hotelService = {
         agent_sl_or_name: filters.agent_sl_or_name || '',
       };
 
+      console.log('Final hotel booking request data:', requestData);
+      
       const response = await apiClient.post('/admin/hotel-booking-list', requestData);
       console.log('Hotel bookings response:', response.data);
 
