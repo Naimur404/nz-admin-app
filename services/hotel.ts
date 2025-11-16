@@ -1,5 +1,5 @@
+import { HotelBookingDetails, HotelBookingFilters, HotelBookingsResponse } from '@/types/hotel';
 import { apiClient } from './api';
-import { HotelBooking, HotelBookingsResponse, HotelBookingFilters, HotelBookingDetails, HotelBookingDetailsResponse } from '@/types/hotel';
 
 export const hotelService = {
   async getBookings(filters: HotelBookingFilters = {}): Promise<HotelBookingsResponse> {

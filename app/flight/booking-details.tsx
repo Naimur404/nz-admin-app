@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  Image,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { flightService } from '@/services/flight';
-import { FlightBookingDetails } from '@/types/flight-details';
-import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { flightService } from '@/services/flight';
+import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
+import { FlightBookingDetails } from '@/types/flight-details';
 
 const { width } = Dimensions.get('window');
 

@@ -6,12 +6,12 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Image,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
-    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
