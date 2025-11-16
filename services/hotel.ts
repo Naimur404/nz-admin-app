@@ -1,5 +1,5 @@
 import { HotelBookingDetails, HotelBookingFilters, HotelBookingsResponse } from '@/types/hotel';
-import { getTodayLocalDate, logDateInfo } from '@/utils/date';
+import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const hotelService = {

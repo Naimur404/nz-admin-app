@@ -1,5 +1,5 @@
 import { AttractionBookingDetailResponse, AttractionBookingsResponse } from '@/types/attraction';
-import { getTodayLocalDate, logDateInfo } from '@/utils/date';
+import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 interface GetAttractionBookingsParams {

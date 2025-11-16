@@ -1,5 +1,5 @@
+import { logDateInfo } from '@/utils/date';
 import { BusBookingDetailsResponse, BusBookingFilters, BusBookingResponse } from '../types/bus';
-import { getTodayLocalDate, logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const busService = {

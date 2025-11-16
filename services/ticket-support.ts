@@ -1,5 +1,5 @@
 import { DataCountResponse, TicketSupportFilters, TicketSupportResponse } from '@/types/ticket-support';
-import { getTodayLocalDate, logDateInfo } from '@/utils/date';
+import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const ticketSupportService = {
