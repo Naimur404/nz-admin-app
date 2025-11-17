@@ -2,11 +2,11 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: "MyNZ Admin",
+    name: "Admin",
     slug: "mynz-admin-app",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/mynztrip-white.png",
+    icon: "./assets/images/mynztrip-logo-Final.png",
     scheme: "mynzadminapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -19,9 +19,9 @@ export default {
       versionCode: 1,
       adaptiveIcon: {
         backgroundColor: "#1e40af",
-        foregroundImage: "./assets/images/mynztrip-white.png",
+        foregroundImage: "./assets/images/mynztrip-logo-Final.png",
         backgroundImage: "./assets/images/android-icon-background.png",
-        monochromeImage: "./assets/images/mynztrip-white.png",
+        monochromeImage: "./assets/images/mynztrip-logo-Final.png",
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
@@ -32,14 +32,14 @@ export default {
     },
     web: {
       output: "static",
-      favicon: "./assets/images/mynztrip-white.png",
+      favicon: "./assets/images/mynztrip-logo-Final.png",
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/mynztrip-white.png",
+          image: "./assets/images/mynztrip-logo-Final.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#1e40af",

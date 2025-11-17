@@ -237,11 +237,6 @@ export default function HomeScreen() {
           route: '/reports/agent-account-statement',
           icon: 'person-outline',
         },
-        {
-          title: 'Walking Sales Report',
-          route: '/reports/walking-sales',
-          icon: 'walk-outline',
-        },
       ],
     },
     {
