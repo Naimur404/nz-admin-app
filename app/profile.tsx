@@ -1,7 +1,8 @@
+import { Skeleton, SkeletonProfile } from '@/components/ui/skeleton';
+import { useTheme } from '@/hooks/use-theme';
 import { authService } from '@/services/auth';
 import { profileService } from '@/services/profile';
 import { UserProfile } from '@/types/profile';
-import { useTheme } from '@/hooks/use-theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -14,7 +15,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SkeletonProfile, Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfileScreen() {
   const router = useRouter();

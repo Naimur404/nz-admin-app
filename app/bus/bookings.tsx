@@ -1,3 +1,4 @@
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { bookingStatusService } from '@/services/booking-status';
 import { busService } from '@/services/bus';
@@ -19,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SkeletonList } from '@/components/ui/skeleton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BusBookingsScreen() {

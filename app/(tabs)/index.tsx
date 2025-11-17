@@ -1,3 +1,4 @@
+import { Skeleton, SkeletonStats } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { profileService } from '@/services/profile';
 import { ticketSupportService } from '@/services/ticket-support';
@@ -19,7 +20,6 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Skeleton, SkeletonStats } from '@/components/ui/skeleton';
 
 const { width: screenWidth } = Dimensions.get('window');
 

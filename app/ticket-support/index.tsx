@@ -1,3 +1,4 @@
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -17,7 +18,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SkeletonList } from '@/components/ui/skeleton';
 
 import { apiListService } from '@/services/api-list';
 import { bookingStatusService } from '@/services/booking-status';

@@ -1,3 +1,4 @@
+import { SkeletonList } from '@/components/ui/skeleton';
 import { attractionService } from '@/services/attraction';
 import { bookingStatusService } from '@/services/booking-status';
 import { AttractionBooking } from '@/types/attraction';
@@ -18,7 +19,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SkeletonList } from '@/components/ui/skeleton';
 
 import { useTheme } from '../../hooks/use-theme';
 

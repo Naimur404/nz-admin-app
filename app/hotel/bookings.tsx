@@ -1,3 +1,4 @@
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { bookingStatusService } from '@/services/booking-status';
 import { hotelService } from '@/services/hotel';
@@ -19,7 +20,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SkeletonList } from '@/components/ui/skeleton';
 
 export default function HotelBookingsScreen() {
   const { theme } = useTheme();

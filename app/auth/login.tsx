@@ -2,7 +2,7 @@ import { authService } from '@/services/auth';
 import { LoginPayload } from '@/types/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,

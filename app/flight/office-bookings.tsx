@@ -1,3 +1,5 @@
+import { SkeletonList } from '@/components/ui/skeleton';
+import { useTheme } from '@/hooks/use-theme';
 import { bookingStatusService } from '@/services/booking-status';
 import { flightService } from '@/services/flight';
 import { FlightBooking, FlightBookingFilters } from '@/types/flight';
@@ -18,8 +20,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/use-theme';
-import { SkeletonList } from '@/components/ui/skeleton';
 
 export default function OfficeFlightBookingsScreen() {
   const router = useRouter();

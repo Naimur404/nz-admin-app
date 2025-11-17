@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
+import React, { useEffect, useRef } from 'react';
+import { Animated, DimensionValue, StyleSheet, View, ViewStyle } from 'react-native';
 
 interface SkeletonProps {
   width?: DimensionValue;
