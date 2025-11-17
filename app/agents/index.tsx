@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Clipboard,
     FlatList,
     RefreshControl,
     StyleSheet,
@@ -64,7 +65,7 @@ export default function AgentListScreen() {
   // Load data when filters change
   useEffect(() => {
     loadData(true);
-  }, [filters.status, filters.partner, filters.market_id, filters.agent_category, filters.agent_type, filters.verified_status, filters.activity_status]);
+  }, [filters.status, filters.agent_info, filters.partner, filters.market_id, filters.agent_category, filters.agent_type, filters.verified_status, filters.activity_status]);
 
   const loadOptions = async () => {
     try {
@@ -89,7 +90,12 @@ export default function AgentListScreen() {
         setLoadingMore(true);
       }
 
-      const currentFilters = { ...filters, page };
+      // Ensure we always include per_page and page, even when filters are reset
+      const currentFilters = { 
+        ...filters, 
+        page: resetData ? 1 : page,
+        per_page: filters.per_page || 15 // Always ensure per_page has a value
+      };
       console.log('Loading agents with filters:', currentFilters);
 
       const response = await agentService.getAgents(currentFilters);
@@ -131,7 +137,7 @@ export default function AgentListScreen() {
   };
 
   const handleReset = () => {
-    setFilters({
+    const resetFilters = {
       status: '',
       agent_info: '',
       partner: '',
@@ -142,7 +148,10 @@ export default function AgentListScreen() {
       activity_status: '',
       page: 1,
       per_page: 15,
-    });
+    };
+    setFilters(resetFilters);
+    // Explicitly load data with reset filters
+    loadData(true);
   };
 
   const getStatusText = (status: number) => {
@@ -201,6 +210,11 @@ export default function AgentListScreen() {
     return `${amount} ${currency}`;
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    Clipboard.setString(text);
+    Alert.alert('Copied', `${label} copied to clipboard`);
+  };
+
   const renderAgentItem = ({ item }: { item: AgentItem }) => (
     <TouchableOpacity
       style={[styles.itemContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
@@ -236,18 +250,42 @@ export default function AgentListScreen() {
           <Text style={[styles.infoLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
             SL No:
           </Text>
-          <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
-            {item.sl_no}
-          </Text>
+          <View style={styles.copyableContainer}>
+            <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+              {item.sl_no}
+            </Text>
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                copyToClipboard(item.sl_no, 'SL No');
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="copy-outline" size={16} color={isDark ? '#9ca3af' : '#6b7280'} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
             Email:
           </Text>
-          <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
-            {item.email}
-          </Text>
+          <View style={styles.copyableContainer}>
+            <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#1f2937', flex: 1 }]}>
+              {item.email}
+            </Text>
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                copyToClipboard(item.email, 'Email');
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="copy-outline" size={16} color={isDark ? '#9ca3af' : '#6b7280'} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.infoRow}>
@@ -859,5 +897,17 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  copyableContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  copyButton: {
+    padding: 8,
+    marginLeft: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
 });
