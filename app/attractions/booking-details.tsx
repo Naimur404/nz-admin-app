@@ -1,5 +1,6 @@
 import { useTheme } from '@/hooks/use-theme';
 import { attractionService } from '@/services/attraction';
+import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { AttractionBooking } from '@/types/attraction';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +21,8 @@ export default function AttractionBookingDetailsScreen() {
   const isDark = theme === 'dark';
   const { bookingTransId } = useLocalSearchParams<{ bookingTransId: string }>();
   const [loading, setLoading] = useState(true);
+  const [operationLogs, setOperationLogs] = useState<BookingOperationLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
   const [booking, setBooking] = useState<AttractionBooking | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,10 +36,27 @@ export default function AttractionBookingDetailsScreen() {
     try {
       const response = await attractionService.getBookingDetails(bookingTransId);
       setBooking(response.data);
+      
+      // Load operation logs after booking details are loaded
+      loadOperationLogs(bookingTransId);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadOperationLogs = async (transactionId: string) => {
+    try {
+      setLogsLoading(true);
+      const response = await attractionService.getBookingOperationLog(transactionId);
+      setOperationLogs(response.data || []);
+      console.log('Attraction operation logs loaded successfully');
+    } catch (error: any) {
+      console.error('Error loading operation logs:', error);
+      // Don't show alert for operation logs failure, just log it
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -61,6 +81,93 @@ export default function AttractionBookingDetailsScreen() {
       minute: '2-digit',
     });
   };
+
+  const parseOperationDetails = (operationDetails: string): OperationDetails | null => {
+    try {
+      return JSON.parse(operationDetails);
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const getOperationTypeColor = (operationType: string): string => {
+    switch (operationType) {
+      case 'Booking Created':
+      case 'BOOKING':
+        return '#10b981';
+      case 'Ticket processing Process':
+      case 'PAYMENT':
+        return '#3b82f6';
+      case 'Support Status Change':
+        return '#8b5cf6';
+      case 'Receipt Upload and selling info update':
+        return '#f59e0b';
+      case 'Cancellation':
+      case 'CANCELLATION':
+        return '#ef4444';
+      case 'Refund':
+      case 'REFUND':
+        return '#f59e0b';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const renderOperationLogItem = (log: BookingOperationLog, index: number) => {
+    const operationDetails = parseOperationDetails(log.operation_details);
+    const operationColor = getOperationTypeColor(log.operation_type);
+    
+    return (
+      <View key={index} style={[styles.tableRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
+        {/* Date & Time Column */}
+        <View style={[styles.tableCell, { flex: 1.2 }]}>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>{formatDateTime(log.created_at)}</Text>
+        </View>
+        
+        {/* Activity Column */}
+        <View style={styles.tableCell}>
+          <View style={[styles.activityBadge, { backgroundColor: operationColor }]}>
+            <Text style={styles.activityText}>{log.operation_type}</Text>
+          </View>
+        </View>
+        
+        {/* Description Column */}
+        <View style={[styles.tableCell, { flex: 1.5 }]}>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>
+            {operationDetails ? operationDetails.remarks || operationDetails.action : log.operation_details}
+          </Text>
+        </View>
+        
+        {/* Done By Column */}
+        <View style={styles.tableCell}>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>{log.done_by}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderOperationLogsTable = () => (
+    <View style={[styles.tableContainer, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+      {/* Table Header */}
+      <View style={[styles.tableHeader, { backgroundColor: isDark ? '#374151' : '#1e40af' }]}>
+        <View style={[styles.tableHeaderCell, { flex: 1.2 }]}>
+          <Text style={styles.tableHeaderText}>Date & Time</Text>
+        </View>
+        <View style={styles.tableHeaderCell}>
+          <Text style={styles.tableHeaderText}>Activity</Text>
+        </View>
+        <View style={[styles.tableHeaderCell, { flex: 1.5 }]}>
+          <Text style={styles.tableHeaderText}>Description</Text>
+        </View>
+        <View style={styles.tableHeaderCell}>
+          <Text style={styles.tableHeaderText}>Done By</Text>
+        </View>
+      </View>
+      
+      {/* Table Body */}
+      {operationLogs.map((log, index) => renderOperationLogItem(log, index))}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -342,6 +449,20 @@ export default function AttractionBookingDetailsScreen() {
             ))}
           </View>
         )}
+
+        {/* Booking Operation Log */}
+        <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#374151' }]}>Booking Operation Log</Text>
+          {logsLoading ? (
+            <ActivityIndicator size="small" color={isDark ? '#3b82f6' : '#1e40af'} style={styles.logsLoading} />
+          ) : operationLogs.length > 0 ? (
+            renderOperationLogsTable()
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Text style={[styles.noDataText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>No operation logs available</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -477,5 +598,68 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'right',
+  },
+  // Operation Log Table Styles
+  tableContainer: {
+    borderRadius: 8,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  tableHeaderCell: {
+    flex: 1,
+    paddingHorizontal: 4,
+  },
+  tableHeaderText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+  },
+  tableCell: {
+    flex: 1,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+  },
+  tableCellText: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  activityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'center',
+  },
+  activityText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  noDataContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  logsLoading: {
+    padding: 20,
   },
 });

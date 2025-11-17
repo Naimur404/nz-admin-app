@@ -1,3 +1,4 @@
+import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { AttractionBookingDetailResponse, AttractionBookingsResponse } from '@/types/attraction';
 import { apiClient } from './api';
 
@@ -44,6 +45,24 @@ export const attractionService = {
     } catch (error) {
       console.error('Error fetching attraction booking details:', error);
       throw error;
+    }
+  },
+
+  async getBookingOperationLog(bookingTransId: string): Promise<BookingOperationLogResponse> {
+    try {
+      console.log('Getting attraction booking operation log for BookingTransactionRef:', bookingTransId);
+      
+      const requestData = {
+        BookingTransactionRef: bookingTransId,
+      };
+
+      const response = await apiClient.post('/admin/booking-operation-log', requestData);
+      console.log('Attraction booking operation log response:', response.data);
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching attraction booking operation log:', error);
+      throw new Error('Failed to fetch attraction booking operation log');
     }
   },
 };

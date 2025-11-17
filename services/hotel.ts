@@ -1,3 +1,4 @@
+import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { HotelBookingDetails, HotelBookingFilters, HotelBookingsResponse } from '@/types/hotel';
 import { apiClient } from './api';
 
@@ -42,6 +43,24 @@ export const hotelService = {
     } catch (error: any) {
       console.error('Error fetching hotel booking details:', error);
       throw new Error('Failed to fetch hotel booking details');
+    }
+  },
+
+  async getBookingOperationLog(uniqueTransId: string): Promise<BookingOperationLogResponse> {
+    try {
+      console.log('Getting hotel booking operation log for BookingTransactionRef:', uniqueTransId);
+      
+      const requestData = {
+        BookingTransactionRef: uniqueTransId,
+      };
+
+      const response = await apiClient.post('/admin/booking-operation-log', requestData);
+      console.log('Hotel booking operation log response:', response.data);
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching hotel booking operation log:', error);
+      throw new Error('Failed to fetch hotel booking operation log');
     }
   },
 };
