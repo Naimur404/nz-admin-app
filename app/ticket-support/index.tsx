@@ -58,22 +58,21 @@ export default function TicketSupportScreen() {
     perPage: 20,
   });
 
-  const [filters, setFilters] = useState<TicketSupportFilters>(() => {
-    return {
-      agent_sl_or_name: '',
-      airline_name: '',
-      api_id: '',
-      booking_id_or_pnr: '',
-      from_date: '', // Allow user to select any date
-      market_id: '',
-      page: 1,
-      per_page: 20,
-      platform_type: '',
-      staff: null,
-      status: '',
-      ticket_no: '',
-      to_date: '',   // Allow user to select any date
-    };
+  // Filter states
+  const [filters, setFilters] = useState<TicketSupportFilters>({
+    agent_sl_or_name: '',
+    airline_name: '',
+    api_id: '',
+    booking_id_or_pnr: '',
+    from_date: '', // Start empty so user selects dates
+    market_id: '',
+    page: 1,
+    per_page: 20,
+    platform_type: '',
+    staff: null,
+    status: '',
+    ticket_no: '',
+    to_date: '',   // Start empty so user selects dates
   });
 
   useEffect(() => {
@@ -161,8 +160,8 @@ export default function TicketSupportScreen() {
     try {
       const statusMap = await bookingStatusService.getBookingStatuses();
       const statusArray = Object.keys(statusMap).map(key => ({
-        label: statusMap[key],
-        value: statusMap[key]
+        label: statusMap[key], // Display text (e.g., "Confirmed")
+        value: key             // Index number (e.g., "1", "2", "3")
       }));
       setStatusOptions(statusArray);
     } catch (error) {
@@ -214,12 +213,9 @@ export default function TicketSupportScreen() {
       const newFilters = {
         ...filters,
         [type === 'from' ? 'from_date' : 'to_date']: dateString,
-        page: 1,
       };
-      setTicketSupports([]);
-      setPagination(prev => ({ ...prev, currentPage: 1 }));
       setFilters(newFilters);
-      loadTicketSupports();
+      // Removed automatic API call - only call when Search button is pressed
     }
   };
 
@@ -233,10 +229,18 @@ export default function TicketSupportScreen() {
   };
 
   const handleSearch = () => {
-    const newFilters = { ...filters, page: 1 };
+    // Reset pagination and clear existing data
+    const searchFilters = { ...filters, page: 1 };
     setTicketSupports([]);
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
-    setFilters(newFilters);
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 20,
+    });
+    setFilters(searchFilters);
+    
+    // Call API with search filters
     loadTicketSupports();
   };
 
@@ -266,13 +270,13 @@ export default function TicketSupportScreen() {
   };
 
   const handleReset = async () => {
-    // Clear all filters including dates
+    // Clear all filters including dates - send empty strings to API
     const resetFilters: TicketSupportFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: '', // Clear dates so user can select any date range
+      from_date: '', // Empty string for API
       market_id: '',
       page: 1,
       per_page: 20,
@@ -280,7 +284,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: '',   // Clear dates so user can select any date range
+      to_date: '',   // Empty string for API
     };
     
     setTicketSupports([]);
@@ -829,7 +833,7 @@ export default function TicketSupportScreen() {
 
       {showFromDate && (
         <DateTimePicker
-          value={new Date(filters.from_date)}
+          value={filters.from_date ? new Date(filters.from_date) : new Date()}
           mode="date"
           display="default"
           onChange={(event, selectedDate) => handleDateChange(event, selectedDate, 'from')}
@@ -838,7 +842,7 @@ export default function TicketSupportScreen() {
 
       {showToDate && (
         <DateTimePicker
-          value={new Date(filters.to_date)}
+          value={filters.to_date ? new Date(filters.to_date) : new Date()}
           mode="date"
           display="default"
           onChange={(event, selectedDate) => handleDateChange(event, selectedDate, 'to')}

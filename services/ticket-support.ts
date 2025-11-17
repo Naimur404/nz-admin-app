@@ -1,5 +1,4 @@
 import { DataCountResponse, TicketSupportFilters, TicketSupportResponse } from '@/types/ticket-support';
-import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 export const ticketSupportService = {
@@ -7,24 +6,46 @@ export const ticketSupportService = {
     try {
       console.log('Getting ticket support data with filters:', filters);
       
-      // Use today's date only as fallback if no dates provided
-      const today = logDateInfo('Ticket Support');
-      
-      const requestData = {
-        agent_sl_or_name: filters.agent_sl_or_name || '',
-        airline_name: filters.airline_name || '',
-        api_id: filters.api_id || '',
-        booking_id_or_pnr: filters.booking_id_or_pnr || '',
-        from_date: filters.from_date || today, // Use user date or fallback to today
-        market_id: filters.market_id || '',
+      // Build request data and exclude null/empty values
+      const requestData: any = {
         page: filters.page || 1,
         per_page: filters.per_page || 20,
-        platform_type: filters.platform_type || '',
-        staff: filters.staff || null,
-        status: filters.status || '',
-        ticket_no: filters.ticket_no || '',
-        to_date: filters.to_date || today, // Use user date or fallback to today
       };
+
+      // Only add non-empty string fields
+      if (filters.agent_sl_or_name && filters.agent_sl_or_name.trim()) {
+        requestData.agent_sl_or_name = filters.agent_sl_or_name;
+      }
+      if (filters.airline_name && filters.airline_name.trim()) {
+        requestData.airline_name = filters.airline_name;
+      }
+      if (filters.api_id && filters.api_id.trim()) {
+        requestData.api_id = filters.api_id;
+      }
+      if (filters.booking_id_or_pnr && filters.booking_id_or_pnr.trim()) {
+        requestData.booking_id_or_pnr = filters.booking_id_or_pnr;
+      }
+      if (filters.from_date && filters.from_date.trim()) {
+        requestData.from_date = filters.from_date;
+      }
+      if (filters.to_date && filters.to_date.trim()) {
+        requestData.to_date = filters.to_date;
+      }
+      if (filters.market_id && filters.market_id.trim()) {
+        requestData.market_id = filters.market_id;
+      }
+      if (filters.platform_type && filters.platform_type.trim()) {
+        requestData.platform_type = filters.platform_type;
+      }
+      if (filters.status && filters.status.trim()) {
+        requestData.status = filters.status; // Now sends index number (1, 2, 3)
+      }
+      if (filters.ticket_no && filters.ticket_no.trim()) {
+        requestData.ticket_no = filters.ticket_no;
+      }
+      if (filters.staff && filters.staff.trim()) {
+        requestData.staff = filters.staff;
+      }
 
       console.log('Final request data:', requestData);
 
