@@ -94,26 +94,46 @@ export default function BusBookingsScreen() {
       console.log('Final bus booking request filters:', filtersToUse);
       const response = await busService.getBookings(filtersToUse);
       
+      // Safety check for response data
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        console.warn('Invalid response data received:', response);
+        return;
+      }
+      
       if (isLoadMore) {
         // Append new data to existing bookings, avoiding duplicates
         setBookings(prev => {
-          const existingIds = new Set(prev.map(item => item.id));
-          const newBookings = response.data.filter(item => !existingIds.has(item.id));
+          if (!Array.isArray(prev)) {
+            console.warn('Previous bookings is not an array, resetting');
+            return response.data;
+          }
+          const existingIds = new Set(prev.map(item => item?.id).filter(id => id !== undefined));
+          const newBookings = response.data.filter(item => item?.id && !existingIds.has(item.id));
           return [...prev, ...newBookings];
         });
       } else {
         // Replace with new data (for search/filter)
-        setBookings(response.data);
+        setBookings(response.data || []);
       }
       
+      // Safety check for pagination data
       setPagination({
-        total: response.total,
-        currentPage: response.current_page,
-        lastPage: response.last_page,
-        perPage: response.per_page,
+        total: response.total || 0,
+        currentPage: response.current_page || 1,
+        lastPage: response.last_page || 1,
+        perPage: response.per_page || 15,
       });
     } catch (error: any) {
+      console.error('Error loading bookings:', error);
       Alert.alert('Error', error.response?.data?.message || 'Failed to load bookings');
+      
+      // Reset loading states on error
+      if (isLoadMore) {
+        setIsLoadingMore(false);
+      } else {
+        setLoading(false);
+        setBookings([]);
+      }
     } finally {
       setLoading(false);
       setIsLoadingMore(false);
@@ -131,7 +151,7 @@ export default function BusBookingsScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!isLoadingMore && pagination.currentPage < pagination.lastPage) {
+    if (!isLoadingMore && !loading && pagination.currentPage < pagination.lastPage && bookings.length > 0) {
       const nextPage = pagination.currentPage + 1;
       // Don't update filters state, just pass the next page directly
       const loadMoreFilters = { ...filters, page: nextPage };
@@ -186,20 +206,36 @@ export default function BusBookingsScreen() {
   };
 
   const calculateProfit = (selling: string, costing: string): string => {
-    const profit = parseFloat(selling) - parseFloat(costing);
-    return profit.toFixed(2);
+    try {
+      const profit = parseFloat(selling || '0') - parseFloat(costing || '0');
+      return isNaN(profit) ? '0.00' : profit.toFixed(2);
+    } catch (error) {
+      return '0.00';
+    }
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    try {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
-  const renderBookingItem = ({ item }: { item: BusBooking }) => (
+  const renderBookingItem = ({ item }: { item: BusBooking }) => {
+    // Safety check for item
+    if (!item || !item.id) {
+      return null;
+    }
+
+    return (
     <TouchableOpacity
       style={[styles.bookingCard, { 
         backgroundColor: isDark ? '#1f2937' : '#fff',
@@ -211,7 +247,7 @@ export default function BusBookingsScreen() {
     >
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Date:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.created_at)}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.created_at || '')}</Text>
       </View>
       
       <View style={styles.row}>
@@ -219,57 +255,58 @@ export default function BusBookingsScreen() {
         <View style={[styles.bookingIdBadge, { 
           backgroundColor: isDark ? '#3b82f6' : '#1e40af'
         }]}>
-          <Text style={[styles.bookingIdText, { color: '#fff' }]}>{item.unique_trans_id}</Text>
+          <Text style={[styles.bookingIdText, { color: '#fff' }]}>{item.unique_trans_id || 'N/A'}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Agent:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.agent_name}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.agent_name || 'N/A'}</Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Ref No:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.booking_ref_number}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.booking_ref_number || 'N/A'}</Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Brand:</Text>
-        <View style={[styles.brandBadge, getBrandColor(item.api_name)]}>
-          <Text style={styles.brandText}>{item.api_name}</Text>
+        <View style={[styles.brandBadge, getBrandColor(item.api_name || '')]}>
+          <Text style={styles.brandText}>{item.api_name || 'N/A'}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Ticket Number:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.ticket_numbers}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.ticket_numbers || 'N/A'}</Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Cost:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency} {item.costing}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency || ''} {item.costing || '0'}</Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Payment:</Text>
-        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency} {item.total_price_selling}</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency || ''} {item.total_price_selling || '0'}</Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Profit:</Text>
         <Text style={[styles.value, styles.profit, { color: isDark ? '#10b981' : '#059669' }]}>
-          {item.currency} {calculateProfit(item.total_price_selling, item.costing)}
+          {item.currency || ''} {calculateProfit(item.total_price_selling || '0', item.costing || '0')}
         </Text>
       </View>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Status:</Text>
-        <View style={[styles.statusBadge, getStatusColor(item.status)]}>
-          <Text style={styles.statusText}>{item.status}</Text>
+        <View style={[styles.statusBadge, getStatusColor(item.status || '')]}>
+          <Text style={styles.statusText}>{item.status || 'N/A'}</Text>
         </View>
       </View>
     </TouchableOpacity>
-  );  const getStatusColor = (status: string) => {
+    );
+  };  const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
         return { backgroundColor: '#10b981' };
@@ -732,9 +769,9 @@ export default function BusBookingsScreen() {
       ) : (
         <>
           <FlatList
-            data={bookings}
+            data={Array.isArray(bookings) ? bookings : []}
             renderItem={renderBookingItem}
-            keyExtractor={(item, index) => `booking-${item.id}-${index}`}
+            keyExtractor={(item, index) => item?.id ? `booking-${item.id}-${index}` : `booking-${index}`}
             style={styles.flatList}
             contentContainerStyle={styles.listContainer}
             onEndReached={handleLoadMore}
@@ -744,6 +781,7 @@ export default function BusBookingsScreen() {
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={10}
+            getItemLayout={undefined}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>No bookings found</Text>
