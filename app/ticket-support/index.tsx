@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/use-theme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -27,6 +28,8 @@ import { DataCountResponse, TicketSupport, TicketSupportFilters } from '@/types/
 
 export default function TicketSupportScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [ticketSupports, setTicketSupports] = useState<TicketSupport[]>([]);
   const [dataCount, setDataCount] = useState<DataCountResponse | null>(null);
   const [ticketStats, setTicketStats] = useState({
@@ -385,102 +388,106 @@ export default function TicketSupportScreen() {
 
   const renderTicketSupportItem = ({ item }: { item: TicketSupport }) => (
     <TouchableOpacity 
-      style={styles.ticketCard}
+      style={[styles.ticketCard, { 
+        backgroundColor: isDark ? '#1f2937' : '#fff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        shadowColor: isDark ? '#000' : '#000'
+      }]}
       onPress={() => router.push(`/flight/booking-details?id=${item.booking_trans_id}`)}
     >
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.booking_date)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Booking Date:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{formatDate(item.booking_date)}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Confirm Time:</Text>
-        <Text style={styles.value}>{formatDateTime(item.confirm_date || 'N/A')}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Confirm Time:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{formatDateTime(item.confirm_date || 'N/A')}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Agent Name:</Text>
-        <Text style={styles.value} numberOfLines={2}>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Agent Name:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]} numberOfLines={2}>
           {item.agent_name}({item.agent_sl_no})
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Phone:</Text>
-        <Text style={styles.value}>{item.agent_number}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Phone:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.agent_number}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Airline:</Text>
-        <Text style={styles.value}>{item.airline_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Airline:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.airline_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Brand:</Text>
-        <Text style={styles.value}>{item.brand}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Brand:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.brand}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking ID | PNR:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Booking ID | PNR:</Text>
         <View style={[styles.bookingIdBadge, getBookingIdColor(item.booking_trans_id)]}>
           <Text style={styles.bookingIdText}>{item.booking_trans_id} | {item.pnr || 'N/A'}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Ref:</Text>
-        <Text style={styles.value}>{item.booking_ref_number || 'N/A'}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Booking Ref:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.booking_ref_number || 'N/A'}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Market:</Text>
-        <Text style={styles.value}>{item.market_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Market:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.market_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Payment:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Payment:</Text>
         <View style={[styles.paymentBadge, getPaymentStatusColor(item.payment_status)]}>
           <Text style={styles.paymentText}>{item.payment_status}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Status:</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
           <Text style={styles.statusText}>{item.status}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Is Refund:</Text>
-        <Text style={[styles.value, item.is_refund ? styles.refund : styles.noRefund]}>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Is Refund:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }, item.is_refund ? styles.refund : styles.noRefund]}>
           {item.is_refund ? 'Yes' : 'No'}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status Staff/ES:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Status Staff/ES:</Text>
         <View style={[styles.supportTypeBadge, getSupportTypeColor(item.support_type)]}>
           <Text style={styles.supportTypeText}>{item.support_type}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>On Pro/Time:</Text>
-        <Text style={styles.value}>{item.on_process} / {formatDateTime(item.on_process_time || 'N/A')}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>On Pro/Time:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.on_process} / {formatDateTime(item.on_process_time || 'N/A')}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Platform Type:</Text>
-        <Text style={styles.value}>{item.platform_type}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Platform Type:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.platform_type}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -501,101 +508,132 @@ export default function TicketSupportScreen() {
 
       {/* Summary Text */}
       {ticketStats.dataCount > 0 && (
-        <View style={styles.summaryTextContainer}>
-          <Text style={styles.summaryText}>
+        <View style={[styles.summaryTextContainer, { 
+          backgroundColor: isDark ? '#1f2937' : '#fff',
+          borderColor: isDark ? '#374151' : '#e5e7eb'
+        }]}>
+          <Text style={[styles.summaryText, { color: isDark ? '#60a5fa' : '#1e40af' }]}>
             Booking {ticketStats.dataCount}, Pax: {ticketStats.total_pax}, Segment: {ticketStats.total_segment}, Reissue Pax: {ticketStats.total_reissue_pax}
           </Text>
         </View>
       )}
 
       {showFilters && (
-        <View style={styles.filterContainer}>
+        <View style={[styles.filterContainer, { 
+          backgroundColor: isDark ? '#1f2937' : '#fff',
+          borderBottomColor: isDark ? '#374151' : '#e5e7eb'
+        }]}>
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Agent/Name</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Agent/Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                  color: isDark ? '#f3f4f6' : '#333'
+                }]}
                 value={filters.agent_sl_or_name}
                 onChangeText={(text) => setFilters({ ...filters, agent_sl_or_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Airline</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Airline</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                  color: isDark ? '#f3f4f6' : '#333'
+                }]}
                 value={filters.airline_name}
                 onChangeText={(text) => setFilters({ ...filters, airline_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Booking ID/PNR</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Booking ID/PNR</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                  color: isDark ? '#f3f4f6' : '#333'
+                }]}
                 value={filters.booking_id_or_pnr}
                 onChangeText={(text) => setFilters({ ...filters, booking_id_or_pnr: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Ticket No</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Ticket No</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                  color: isDark ? '#f3f4f6' : '#333'
+                }]}
                 value={filters.ticket_no}
                 onChangeText={(text) => setFilters({ ...filters, ticket_no: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>From Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>From Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }]}
                 onPress={() => setShowFromDate(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#333' }]}>
                   {filters.from_date || 'Select from date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>To Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>To Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }]}
                 onPress={() => setShowToDate(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#333' }]}>
                   {filters.to_date || 'Select to date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Status</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Status</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb'
+              }]}>
                 <Picker
                   selectedValue={filters.status}
                   onValueChange={(itemValue) => setFilters({ ...filters, status: itemValue })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#333' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Status" value="" />
                   {statusOptions.map((status) => (
@@ -606,14 +644,17 @@ export default function TicketSupportScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Platform</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Platform</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb'
+              }]}>
                 <Picker
                   selectedValue={filters.platform_type}
                   onValueChange={(itemValue) => setFilters({ ...filters, platform_type: itemValue })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#333' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Platforms" value="" />
                   <Picker.Item label="B2B" value="B2B" />
@@ -625,14 +666,17 @@ export default function TicketSupportScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>API</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>API</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb'
+              }]}>
                 <Picker
                   selectedValue={filters.api_id}
                   onValueChange={(itemValue) => setFilters({ ...filters, api_id: itemValue })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#333' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All APIs" value="" />
                   {apiOptions.map((api) => (
@@ -643,14 +687,17 @@ export default function TicketSupportScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Market</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Market</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb'
+              }]}>
                 <Picker
                   selectedValue={filters.market_id}
                   onValueChange={(itemValue) => setFilters({ ...filters, market_id: itemValue })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#333' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Markets" value="" />
                   {marketOptions.map((market) => (
@@ -663,25 +710,32 @@ export default function TicketSupportScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Staff</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#333' }]}>Staff</Text>
               <View style={styles.staffContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#333'
+                  }]}
                   value={staffSearchText}
                   onChangeText={handleStaffSearch}
                   onFocus={handleStaffInputFocus}
                   placeholder="Search staff by name or email..."
-                  placeholderTextColor="#999"
+                  placeholderTextColor={isDark ? '#9ca3af' : '#999'}
                 />
                 {showStaffDropdown && filteredStaffOptions.length > 0 && (
-                  <ScrollView style={styles.staffDropdown} nestedScrollEnabled>
+                  <ScrollView style={[styles.staffDropdown, { 
+                    backgroundColor: isDark ? '#374151' : '#fff',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                  }]} nestedScrollEnabled>
                     {filteredStaffOptions.map((staff) => (
                       <TouchableOpacity
                         key={staff.value}
-                        style={styles.staffOption}
+                        style={[styles.staffOption, { borderBottomColor: isDark ? '#4b5563' : '#f3f4f6' }]}
                         onPress={() => handleStaffSelect(staff)}
                       >
-                        <Text style={styles.staffOptionText}>{staff.label}</Text>
+                        <Text style={[styles.staffOptionText, { color: isDark ? '#f3f4f6' : '#333' }]}>{staff.label}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -701,10 +755,10 @@ export default function TicketSupportScreen() {
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <TouchableOpacity style={[styles.resetButton, { backgroundColor: isDark ? '#6b7280' : '#6b7280' }]} onPress={handleReset}>
               <Text style={styles.buttonText}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+            <TouchableOpacity style={[styles.searchButton, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]} onPress={handleSearch}>
               <Text style={styles.buttonText}>Search</Text>
             </TouchableOpacity>
           </View>
@@ -714,7 +768,7 @@ export default function TicketSupportScreen() {
       {/* Results */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
         </View>
       ) : (
         <FlatList
@@ -727,15 +781,15 @@ export default function TicketSupportScreen() {
           ListFooterComponent={() => 
             isLoadingMore ? (
               <View style={styles.loadMoreContainer}>
-                <ActivityIndicator size="small" color="#1e40af" />
-                <Text style={styles.loadMoreText}>Loading more...</Text>
+                <ActivityIndicator size="small" color={isDark ? '#3b82f6' : '#1e40af'} />
+                <Text style={[styles.loadMoreText, { color: isDark ? '#9ca3af' : '#666' }]}>Loading more...</Text>
               </View>
             ) : null
           }
           ListEmptyComponent={() => 
             !loading ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No ticket support data found</Text>
+                <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#666' }]}>No ticket support data found</Text>
               </View>
             ) : null
           }
@@ -766,13 +820,10 @@ export default function TicketSupportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -797,26 +848,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   summaryTextContainer: {
-    backgroundColor: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginHorizontal: 12,
     marginVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   summaryText: {
     fontSize: 14,
-    color: '#1e40af',
     fontWeight: '600',
     textAlign: 'center',
   },
   filterContainer: {
-    backgroundColor: '#fff',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   filterRow: {
     flexDirection: 'row',
@@ -829,37 +875,29 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   dateInput: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dateText: {
     fontSize: 14,
-    color: '#333',
   },
   pickerContainer: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     overflow: 'hidden',
     minHeight: 50,
   },
@@ -874,14 +912,12 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     flex: 1,
-    backgroundColor: '#1e40af',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
   resetButton: {
     flex: 1,
-    backgroundColor: '#6b7280',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
@@ -901,7 +937,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   ticketCard: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 8,
@@ -911,6 +946,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderWidth: 1,
   },
   row: {
     flexDirection: 'row',
@@ -920,13 +956,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
     flex: 1,
   },
   value: {
     fontSize: 13,
-    color: '#333',
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
@@ -983,7 +1017,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
   },
   loadMoreContainer: {
     flexDirection: 'row',
@@ -994,7 +1027,6 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 14,
-    color: '#666',
   },
   staffContainer: {
     position: 'relative',
@@ -1005,9 +1037,7 @@ const styles = StyleSheet.create({
     top: 50,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     borderRadius: 6,
     maxHeight: 200,
     zIndex: 1001,
@@ -1020,11 +1050,9 @@ const styles = StyleSheet.create({
   staffOption: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   staffOptionText: {
     fontSize: 14,
-    color: '#333',
   },
   dropdownOverlay: {
     position: 'absolute',
