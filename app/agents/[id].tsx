@@ -1,17 +1,23 @@
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { agentService } from '@/services/agent';
+import { marketService } from '@/services/market';
 import { AgentDetails, AgentDocument } from '@/types/agent';
+import { MarketItem } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
+    Image,
     Linking,
+    Modal,
     RefreshControl,
     ScrollView,
     StatusBar,
     StyleSheet,
+    Switch,
     Text,
     TouchableOpacity,
     View
@@ -30,11 +36,35 @@ export default function AgentDetailsScreen() {
   const [otpStatus, setOtpStatus] = useState(0);
   const [isVendorAllowed, setIsVendorAllowed] = useState(0);
 
+  // New state for admin actions
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showMarketModal, setShowMarketModal] = useState(false);
+  const [availableMarkets, setAvailableMarkets] = useState<MarketItem[]>([]);
+  const [selectedMarkets, setSelectedMarkets] = useState<{ [key: number]: boolean }>({});
+  const [updatingOtp, setUpdatingOtp] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingMarkets, setUpdatingMarkets] = useState(false);
+
+  // Document verification state
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<AgentDocument | null>(null);
+  const [verifyingDocument, setVerifyingDocument] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchAgentDetails();
+      loadAvailableMarkets();
     }
   }, [id]);
+
+  const loadAvailableMarkets = async () => {
+    try {
+      const markets = await marketService.getMarketList();
+      setAvailableMarkets(markets);
+    } catch (error) {
+      console.error('Error loading markets:', error);
+    }
+  };
 
   const fetchAgentDetails = async () => {
     try {
@@ -43,6 +73,15 @@ export default function AgentDetailsScreen() {
       setAgentData(response.data);
       setOtpStatus(response.otp_status);
       setIsVendorAllowed(response.is_vendor_allowed);
+      
+      // Initialize selected markets based on agent's available markets
+      const marketsMap: { [key: number]: boolean } = {};
+      if (response.data.available_markets) {
+        response.data.available_markets.forEach(market => {
+          marketsMap[market.market_id] = market.is_active === 1;
+        });
+      }
+      setSelectedMarkets(marketsMap);
     } catch (error) {
       console.error('Error fetching agent details:', error);
       Alert.alert('Error', 'Failed to fetch agent details');
@@ -106,16 +145,106 @@ export default function AgentDetailsScreen() {
     return `${currency} ${numAmount.toFixed(2)}`;
   };
 
-  const handleDocumentPress = async (doc: AgentDocument) => {
-    if (doc.file.startsWith('http')) {
-      try {
-        await Linking.openURL(doc.file);
-      } catch (error) {
-        Alert.alert('Error', 'Unable to open document');
-      }
-    } else {
-      Alert.alert('Document', `Document content: ${doc.file}`);
+  const handleOtpToggle = async (newStatus: boolean) => {
+    if (!agentData) return;
+    
+    setUpdatingOtp(true);
+    try {
+      await agentService.updateOtpStatus(id as string, newStatus ? 1 : 0);
+      setOtpStatus(newStatus ? 1 : 0);
+      Alert.alert('Success', `OTP status ${newStatus ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      console.error('Error updating OTP status:', error);
+      Alert.alert('Error', 'Failed to update OTP status');
+    } finally {
+      setUpdatingOtp(false);
     }
+  };
+
+  const handleStatusUpdate = async (newStatus: number) => {
+    if (!agentData) return;
+    
+    setUpdatingStatus(true);
+    try {
+      await agentService.updateAgentStatus(id as string, newStatus);
+      setAgentData({
+        ...agentData,
+        status: newStatus
+      });
+      setShowStatusModal(false);
+      Alert.alert('Success', 'Agent status updated successfully');
+    } catch (error) {
+      console.error('Error updating agent status:', error);
+      Alert.alert('Error', 'Failed to update agent status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleMarketToggle = (marketId: number) => {
+    setSelectedMarkets(prev => ({
+      ...prev,
+      [marketId]: !prev[marketId]
+    }));
+  };
+
+  const handleMarketUpdate = async () => {
+    if (!agentData) return;
+    
+    setUpdatingMarkets(true);
+    try {
+      const marketList = Object.entries(selectedMarkets).map(([marketId, isActive]) => ({
+        id: parseInt(marketId),
+        status: isActive ? 1 : 0
+      }));
+      
+      await agentService.updateAgentMarkets(id as string, marketList);
+      
+      // Refresh agent details to get updated markets
+      await fetchAgentDetails();
+      setShowMarketModal(false);
+      Alert.alert('Success', 'Agent markets updated successfully');
+    } catch (error) {
+      console.error('Error updating agent markets:', error);
+      Alert.alert('Error', 'Failed to update agent markets');
+    } finally {
+      setUpdatingMarkets(false);
+    }
+  };
+
+  const handleDocumentPress = (doc: AgentDocument) => {
+    setSelectedDocument(doc);
+    setShowDocumentModal(true);
+  };
+
+  const handleDocumentVerification = async (approval: number) => {
+    if (!selectedDocument) return;
+    
+    setVerifyingDocument(true);
+    try {
+      await agentService.verifyAgentDocument(selectedDocument.id.toString(), approval);
+      
+      // Refresh agent details to get updated document status
+      await fetchAgentDetails();
+      setShowDocumentModal(false);
+      setSelectedDocument(null);
+      
+      const statusText = approval === 1 ? 'approved' : 'rejected';
+      Alert.alert('Success', `Document ${statusText} successfully`);
+    } catch (error) {
+      console.error('Error verifying document:', error);
+      Alert.alert('Error', 'Failed to verify document');
+    } finally {
+      setVerifyingDocument(false);
+    }
+  };
+
+  const isImageFile = (url: string) => {
+    return url.match(/\.(jpeg|jpg|gif|png|webp)$/i) !== null;
+  };
+
+  const isPdfFile = (url: string) => {
+    return url.match(/\.pdf$/i) !== null;
   };
 
   if (loading) {
@@ -196,6 +325,71 @@ export default function AgentDetailsScreen() {
             />
           }
         >
+          {/* Admin Actions */}
+          <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="settings-outline" size={20} color={isDark ? '#3b82f6' : '#1e40af'} />
+              <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                Admin Actions
+              </Text>
+            </View>
+
+            <View style={styles.adminActionsGrid}>
+              {/* OTP Status Toggle */}
+              <View style={styles.actionItem}>
+                <Text style={[styles.actionLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                  OTP Status
+                </Text>
+                <View style={styles.actionControl}>
+                  <Switch
+                    value={otpStatus === 1}
+                    onValueChange={handleOtpToggle}
+                    disabled={updatingOtp}
+                    trackColor={{ false: '#d1d5db', true: '#10b981' }}
+                    thumbColor={otpStatus === 1 ? '#fff' : '#f9fafb'}
+                  />
+                  <Text style={[styles.actionStatus, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                    {updatingOtp ? 'Updating...' : (otpStatus === 1 ? 'Enabled' : 'Disabled')}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Agent Status */}
+              <View style={styles.actionItem}>
+                <Text style={[styles.actionLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                  Agent Status
+                </Text>
+                <TouchableOpacity
+                  style={[styles.actionButton, { borderColor: isDark ? '#374151' : '#d1d5db' }]}
+                  onPress={() => setShowStatusModal(true)}
+                  disabled={updatingStatus}
+                >
+                  <Text style={[styles.actionButtonText, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                    {updatingStatus ? 'Updating...' : getStatusText(agentData?.status || 0)}
+                  </Text>
+                  <Ionicons name="chevron-down" size={16} color={isDark ? '#9ca3af' : '#6b7280'} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Market Management */}
+              <View style={[styles.actionItem, styles.fullWidthAction]}>
+                <Text style={[styles.actionLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                  Manage Markets
+                </Text>
+                <TouchableOpacity
+                  style={[styles.actionButton, { borderColor: isDark ? '#374151' : '#d1d5db' }]}
+                  onPress={() => setShowMarketModal(true)}
+                  disabled={updatingMarkets}
+                >
+                  <Text style={[styles.actionButtonText, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                    {updatingMarkets ? 'Updating...' : 'Configure Markets'}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={isDark ? '#9ca3af' : '#6b7280'} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
           {/* Basic Information */}
           <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <View style={styles.sectionHeader}>
@@ -475,6 +669,244 @@ export default function AgentDetailsScreen() {
             </View>
           )}
         </ScrollView>
+
+        {/* Status Modal */}
+        <Modal
+          visible={showStatusModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowStatusModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                Update Agent Status
+              </Text>
+              
+              <View style={styles.modalButtonGrid}>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: '#10b981' }]}
+                  onPress={() => handleStatusUpdate(1)}
+                  disabled={updatingStatus}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                    Approved
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: '#f59e0b' }]}
+                  onPress={() => handleStatusUpdate(0)}
+                  disabled={updatingStatus}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                    Pending
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: '#ef4444' }]}
+                  onPress={() => handleStatusUpdate(-1)}
+                  disabled={updatingStatus}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                    Rejected
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowStatusModal(false)}
+                  disabled={updatingStatus}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Market Modal */}
+        <Modal
+          visible={showMarketModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowMarketModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                Manage Agent Markets
+              </Text>
+              
+              <ScrollView style={{ maxHeight: 300 }}>
+                {availableMarkets.map((market) => (
+                  <View key={market.id} style={[styles.marketItemCheckbox, { borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+                    <Text style={[styles.marketItemText, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                      {market.market_name} ({market.currency_code})
+                    </Text>
+                    <Switch
+                      value={selectedMarkets[market.id] || false}
+                      onValueChange={() => handleMarketToggle(market.id)}
+                      trackColor={{ false: '#d1d5db', true: '#10b981' }}
+                      thumbColor={selectedMarkets[market.id] ? '#fff' : '#f9fafb'}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowMarketModal(false)}
+                  disabled={updatingMarkets}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleMarketUpdate}
+                  disabled={updatingMarkets}
+                >
+                  <Text style={styles.confirmButtonText}>
+                    {updatingMarkets ? 'Updating...' : 'Update Markets'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Document Verification Modal */}
+        <Modal
+          visible={showDocumentModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDocumentModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.documentModalContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                Document Verification
+              </Text>
+
+              {selectedDocument && (
+                <>
+                  <Text style={[styles.documentModalName, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                    {selectedDocument.name}
+                  </Text>
+
+                  <View style={styles.documentPreviewContainer}>
+                    {selectedDocument.file.startsWith('http') ? (
+                      <>
+                        {isImageFile(selectedDocument.file) ? (
+                          <Image 
+                            source={{ uri: selectedDocument.file }}
+                            style={styles.documentPreviewImage}
+                            resizeMode="contain"
+                          />
+                        ) : isPdfFile(selectedDocument.file) ? (
+                          <View style={styles.pdfPreviewContainer}>
+                            <Ionicons name="document-text" size={64} color={isDark ? '#9ca3af' : '#6b7280'} />
+                            <Text style={[styles.pdfPreviewText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                              PDF Document
+                            </Text>
+                            <TouchableOpacity
+                              style={[styles.openPdfButton, { borderColor: isDark ? '#374151' : '#d1d5db' }]}
+                              onPress={() => Linking.openURL(selectedDocument.file)}
+                            >
+                              <Ionicons name="open-outline" size={16} color={isDark ? '#3b82f6' : '#1e40af'} />
+                              <Text style={[styles.openPdfText, { color: isDark ? '#3b82f6' : '#1e40af' }]}>
+                                Open PDF
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <View style={styles.unknownFileContainer}>
+                            <Ionicons name="document-outline" size={64} color={isDark ? '#9ca3af' : '#6b7280'} />
+                            <Text style={[styles.unknownFileText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                              Unknown File Type
+                            </Text>
+                            <TouchableOpacity
+                              style={[styles.openPdfButton, { borderColor: isDark ? '#374151' : '#d1d5db' }]}
+                              onPress={() => Linking.openURL(selectedDocument.file)}
+                            >
+                              <Ionicons name="open-outline" size={16} color={isDark ? '#3b82f6' : '#1e40af'} />
+                              <Text style={[styles.openPdfText, { color: isDark ? '#3b82f6' : '#1e40af' }]}>
+                                Open File
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </>
+                    ) : (
+                      <View style={styles.textDocumentContainer}>
+                        <Ionicons name="document-text-outline" size={64} color={isDark ? '#9ca3af' : '#6b7280'} />
+                        <Text style={[styles.textDocumentContent, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                          {selectedDocument.file}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={[styles.verificationStatus, { 
+                    backgroundColor: selectedDocument.is_validated ? '#dcfce7' : '#fef3c7',
+                    borderColor: selectedDocument.is_validated ? '#16a34a' : '#d97706'
+                  }]}>
+                    <Text style={[styles.verificationStatusText, { 
+                      color: selectedDocument.is_validated ? '#16a34a' : '#d97706'
+                    }]}>
+                      Status: {selectedDocument.is_validated ? 'Verified' : 'Pending Verification'}
+                    </Text>
+                  </View>
+
+                  {/* Verification Actions - Only show if not already verified */}
+                  {!selectedDocument.is_validated && (
+                    <View style={styles.verificationActions}>
+                      <TouchableOpacity
+                        style={[styles.verificationButton, styles.approveButton]}
+                        onPress={() => handleDocumentVerification(1)}
+                        disabled={verifyingDocument}
+                      >
+                        <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                        <Text style={styles.verificationButtonText}>
+                          {verifyingDocument ? 'Approving...' : 'Approve'}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.verificationButton, styles.rejectButton]}
+                        onPress={() => handleDocumentVerification(0)}
+                        disabled={verifyingDocument}
+                      >
+                        <Ionicons name="close-circle" size={20} color="#fff" />
+                        <Text style={styles.verificationButtonText}>
+                          {verifyingDocument ? 'Rejecting...' : 'Reject'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setShowDocumentModal(false);
+                    setSelectedDocument(null);
+                  }}
+                  disabled={verifyingDocument}
+                >
+                  <Text style={styles.cancelButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </>
   );
@@ -672,5 +1104,239 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  adminActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  actionItem: {
+    width: '50%',
+    paddingHorizontal: 8,
+    marginBottom: 16,
+  },
+  fullWidthAction: {
+    width: '100%',
+  },
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  actionControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionStatus: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    minWidth: 100,
+  },
+  modalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 16,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#6b7280',
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  confirmButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#3b82f6',
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  marketItemCheckbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  marketItemText: {
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  documentModalContainer: {
+    width: '95%',
+    maxWidth: 500,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    maxHeight: '90%',
+  },
+  documentModalName: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  documentPreviewContainer: {
+    width: '100%',
+    height: 300,
+    marginBottom: 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f9fafb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  documentPreviewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  pdfPreviewContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    gap: 12,
+  },
+  pdfPreviewText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  openPdfButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    gap: 8,
+  },
+  openPdfText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  unknownFileContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    gap: 12,
+  },
+  unknownFileText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  textDocumentContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    gap: 12,
+    padding: 16,
+  },
+  textDocumentContent: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  verificationStatus: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  verificationStatusText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  verificationActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  verificationButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  approveButton: {
+    backgroundColor: '#10b981',
+  },
+  rejectButton: {
+    backgroundColor: '#ef4444',
+  },
+  verificationButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

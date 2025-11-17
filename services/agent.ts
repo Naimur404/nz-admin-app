@@ -58,6 +58,79 @@ class AgentService {
       throw error;
     }
   }
+
+  async updateOtpStatus(agentId: string, otpStatus: number): Promise<any> {
+    try {
+      console.log(`Updating OTP status for agent ${agentId} to ${otpStatus}`);
+      const response = await apiClient.post('/admin/agent/otp-status', {
+        agent_id: agentId,
+        otp_status: otpStatus.toString()
+      });
+      console.log('OTP status update response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating OTP status:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
+
+  async updateAgentStatus(agentId: string, status: number): Promise<any> {
+    try {
+      console.log(`Updating agent status for ${agentId} to ${status}`);
+      const response = await apiClient.post(`/admin/agents/${agentId}`, {
+        status: status.toString()
+      });
+      console.log('Agent status update response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating agent status:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
+
+  async updateAgentMarkets(agentId: string, marketList: { id: number; status: number }[]): Promise<any> {
+    try {
+      console.log(`Updating markets for agent ${agentId}:`, marketList);
+      const response = await apiClient.post(`/admin/allow-markets/${agentId}`, {
+        market_list: marketList
+      });
+      console.log('Agent markets update response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating agent markets:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
+
+  async verifyAgentDocument(documentId: string, approval: number): Promise<any> {
+    try {
+      console.log(`Verifying document ${documentId} with approval ${approval}`);
+      const response = await apiClient.post(`/admin/agents-document-verify/${documentId}`, {
+        approval: approval
+      });
+      console.log('Document verification response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error verifying document:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
 }
 
 export const agentService = new AgentService();
