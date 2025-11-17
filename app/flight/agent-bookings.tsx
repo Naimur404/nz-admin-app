@@ -18,9 +18,12 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../hooks/use-theme';
 
 export default function AgentFlightBookingsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [bookings, setBookings] = useState<FlightBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -230,87 +233,156 @@ export default function AgentFlightBookingsScreen() {
 
   const renderBookingItem = ({ item }: { item: FlightBooking }) => (
     <TouchableOpacity 
-      style={styles.bookingCard}
+      style={[
+        styles.bookingCard,
+        { backgroundColor: isDark ? '#1f2937' : '#fff' }
+      ]}
       onPress={() => router.push(`/flight/booking-details?id=${item.booking_trans_id}`)}
     >
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.booking_date)}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Booking Date:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{formatDate(item.booking_date)}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Agent Name:</Text>
-        <Text style={styles.value} numberOfLines={2}>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Agent Name:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]} numberOfLines={2}>
           {item.agent_name}({item.agent_sl_no})
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking ID:</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Booking ID:</Text>
         <View style={styles.bookingIdBadge}>
           <Text style={styles.bookingIdText}>{item.booking_trans_id}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Airline:</Text>
-        <Text style={styles.value}>{item.airline_name}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Airline:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{item.airline_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Routes:</Text>
-        <Text style={styles.value}>{item.routes}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Routes:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{item.routes}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>PNR:</Text>
-        <Text style={styles.value}>{item.pnr || 'N/A'}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>PNR:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{item.pnr || 'N/A'}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Cost:</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Cost:</Text>
         <Text style={[styles.value, styles.profit]}>
           {item.currency} {parseFloat(item.total_price_selling).toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Profit:</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Profit:</Text>
         <Text style={[styles.value, parseFloat(item.profit) >= 0 ? styles.profit : styles.loss]}>
           {item.currency} {parseFloat(item.profit).toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Payment:</Text>
-        <Text style={styles.value}>{item.payment_method}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Payment:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{item.payment_method}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Journey Type:</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Journey Type:</Text>
         <View style={[styles.journeyBadge, getJourneyTypeColor(item.journey_type.value)]}>
           <Text style={styles.journeyText}>{item.journey_type.value}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Status:</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
           <Text style={styles.statusText}>{item.status}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Ticket Number:</Text>
-        <Text style={styles.value}>{item.ticket_number}</Text>
+        <Text style={[
+          styles.label,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Ticket Number:</Text>
+        <Text style={[
+          styles.value,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>{item.ticket_number}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[
+      styles.container,
+      { backgroundColor: isDark ? '#111827' : '#f5f5f5' }
+    ]}>
+      <SafeAreaView style={[
+        styles.safeArea,
+        { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+      ]} edges={['top']}>
+        <View style={[
+          styles.header,
+          { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+        ]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -330,18 +402,36 @@ export default function AgentFlightBookingsScreen() {
       </SafeAreaView>
 
       {showFilters && (
-        <View style={styles.filterContainer}>
+        <View style={[
+          styles.filterContainer,
+          { 
+            backgroundColor: isDark ? '#1f2937' : '#fff',
+            borderBottomColor: isDark ? '#374151' : '#e5e7eb'
+          }
+        ]}>
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>From Date</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>From Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[
+                  styles.dateInput,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                  }
+                ]}
                 onPress={() => setShowFromDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[
+                  styles.dateText,
+                  { color: isDark ? '#f3f4f6' : '#333' }
+                ]}>
                   {filters.from_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showFromDatePicker && (
                 <DateTimePicker
@@ -354,15 +444,27 @@ export default function AgentFlightBookingsScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>To Date</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>To Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[
+                  styles.dateInput,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                  }
+                ]}
                 onPress={() => setShowToDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[
+                  styles.dateText,
+                  { color: isDark ? '#f3f4f6' : '#333' }
+                ]}>
                   {filters.to_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showToDatePicker && (
                 <DateTimePicker
@@ -377,73 +479,135 @@ export default function AgentFlightBookingsScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Booking ID/PNR</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Booking ID/PNR</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#000'
+                  }
+                ]}
                 value={filters.booking_id_or_pnr}
                 onChangeText={(text) => setFilters({ ...filters, booking_id_or_pnr: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Agent SL / Name</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Agent SL / Name</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#000'
+                  }
+                ]}
                 value={filters.agent_sl_or_name}
                 onChangeText={(text) => setFilters({ ...filters, agent_sl_or_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Airline Name</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Airline Name</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#000'
+                  }
+                ]}
                 value={filters.airline_name}
                 onChangeText={(text) => setFilters({ ...filters, airline_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Ticket No</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Ticket No</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#000'
+                  }
+                ]}
                 value={filters.ticket_no}
                 onChangeText={(text) => setFilters({ ...filters, ticket_no: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Staff</Text>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Staff</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    color: isDark ? '#f3f4f6' : '#000'
+                  }
+                ]}
                 value={filters.staff}
                 onChangeText={(text) => setFilters({ ...filters, staff: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Status</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[
+                styles.filterLabel,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>Status</Text>
+              <View style={[
+                styles.pickerContainer,
+                { 
+                  backgroundColor: isDark ? '#374151' : '#f3f4f6',
+                  borderColor: isDark ? '#4b5563' : '#e5e7eb'
+                }
+              ]}>
                 <Picker
                   selectedValue={filters.status || ''}
                   onValueChange={(value) => setFilters({ ...filters, status: value })}
-                  style={styles.picker}
+                  style={[
+                    styles.picker,
+                    { color: isDark ? '#f3f4f6' : '#000' }
+                  ]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Statuses" value="" />
                   {statusOptions.map((option) => (
@@ -467,7 +631,7 @@ export default function AgentFlightBookingsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#60a5fa' : '#1e40af'} />
         </View>
       ) : (
         <>
@@ -480,14 +644,20 @@ export default function AgentFlightBookingsScreen() {
             onEndReachedThreshold={0.1}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No flight bookings found</Text>
+                <Text style={[
+                  styles.emptyText,
+                  { color: isDark ? '#9ca3af' : '#666' }
+                ]}>No flight bookings found</Text>
               </View>
             }
             ListFooterComponent={() => 
               isLoadingMore ? (
                 <View style={styles.loadMoreContainer}>
-                  <ActivityIndicator size="small" color="#1e40af" />
-                  <Text style={styles.loadMoreText}>Loading more...</Text>
+                  <ActivityIndicator size="small" color={isDark ? '#60a5fa' : '#1e40af'} />
+                  <Text style={[
+                    styles.loadMoreText,
+                    { color: isDark ? '#9ca3af' : '#666' }
+                  ]}>Loading more...</Text>
                 </View>
               ) : null
             }
@@ -501,13 +671,10 @@ export default function AgentFlightBookingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -532,10 +699,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   filterContainer: {
-    backgroundColor: '#fff',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   filterRow: {
     flexDirection: 'row',
@@ -548,37 +713,29 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   dateInput: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dateText: {
     fontSize: 14,
-    color: '#333',
   },
   pickerContainer: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     overflow: 'hidden',
     minHeight: 50,
   },
@@ -619,7 +776,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   bookingCard: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -637,13 +793,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
     flex: 1,
   },
   value: {
     fontSize: 13,
-    color: '#333',
     fontWeight: '600',
     flex: 1.5,
     textAlign: 'right',
@@ -691,7 +845,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
   },
   loadMoreContainer: {
     flexDirection: 'row',
@@ -702,6 +855,5 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 14,
-    color: '#666',
   },
 });

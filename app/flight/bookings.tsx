@@ -8,14 +8,26 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../hooks/use-theme';
 
 export default function FlightBookingsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[
+      styles.container,
+      { backgroundColor: isDark ? '#111827' : '#f5f5f5' }
+    ]}>
+      <SafeAreaView style={[
+        styles.safeArea,
+        { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+      ]} edges={['top']}>
+        <View style={[
+          styles.header,
+          { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+        ]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -25,39 +37,65 @@ export default function FlightBookingsScreen() {
       </SafeAreaView>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Select Booking Type</Text>
-        <Text style={styles.subtitle}>Choose the type of flight bookings you want to view</Text>
+        <Text style={[
+          styles.title,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>Select Booking Type</Text>
+        <Text style={[
+          styles.subtitle,
+          { color: isDark ? '#9ca3af' : '#666' }
+        ]}>Choose the type of flight bookings you want to view</Text>
 
         <TouchableOpacity
-          style={[styles.optionCard, styles.officeCard]}
+          style={[
+            styles.optionCard,
+            styles.officeCard,
+            { backgroundColor: isDark ? '#1f2937' : '#fff' }
+          ]}
           onPress={() => router.push('/flight/office-bookings')}
         >
           <View style={styles.optionIcon}>
             <Ionicons name="business" size={32} color="#fff" />
           </View>
           <View style={styles.optionContent}>
-            <Text style={styles.optionTitle}>Office Bookings</Text>
-            <Text style={styles.optionDescription}>
+            <Text style={[
+              styles.optionTitle,
+              { color: isDark ? '#f3f4f6' : '#333' }
+            ]}>Office Bookings</Text>
+            <Text style={[
+              styles.optionDescription,
+              { color: isDark ? '#9ca3af' : '#666' }
+            ]}>
               View and manage flight bookings from the office perspective
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#666" />
+          <Ionicons name="chevron-forward" size={24} color={isDark ? '#9ca3af' : '#666'} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.optionCard, styles.agentCard]}
+          style={[
+            styles.optionCard,
+            styles.agentCard,
+            { backgroundColor: isDark ? '#1f2937' : '#fff' }
+          ]}
           onPress={() => router.push('/flight/agent-bookings')}
         >
-          <View style={styles.optionIcon}>
+          <View style={[styles.optionIcon, { backgroundColor: '#8b5cf6' }]}>
             <Ionicons name="people" size={32} color="#fff" />
           </View>
           <View style={styles.optionContent}>
-            <Text style={styles.optionTitle}>Agent Bookings</Text>
-            <Text style={styles.optionDescription}>
+            <Text style={[
+              styles.optionTitle,
+              { color: isDark ? '#f3f4f6' : '#333' }
+            ]}>Agent Bookings</Text>
+            <Text style={[
+              styles.optionDescription,
+              { color: isDark ? '#9ca3af' : '#666' }
+            ]}>
               View and manage flight bookings from the agent perspective
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#666" />
+          <Ionicons name="chevron-forward" size={24} color={isDark ? '#9ca3af' : '#666'} />
         </TouchableOpacity>
       </View>
     </View>
@@ -67,13 +105,10 @@ export default function FlightBookingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -95,18 +130,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 40,
   },
   optionCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -141,12 +173,10 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
   },
   optionDescription: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
   },
 });

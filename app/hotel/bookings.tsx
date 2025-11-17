@@ -18,8 +18,11 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function HotelBookingsScreen() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const router = useRouter();
   const [bookings, setBookings] = useState<HotelBooking[]>([]);
   const [loading, setLoading] = useState(false);
@@ -205,6 +208,21 @@ export default function HotelBookingsScreen() {
     }
   };
 
+  const getBrandColor = (brand: string) => {
+    switch (brand) {
+      case 'EAN':
+        return { backgroundColor: '#8b5cf6' }; // Purple
+      case 'EXPEDIA':
+        return { backgroundColor: '#f59e0b' }; // Orange
+      case 'BOOKING':
+        return { backgroundColor: '#06b6d4' }; // Cyan
+      case 'AGODA':
+        return { backgroundColor: '#ef4444' }; // Red
+      default:
+        return { backgroundColor: '#3b82f6' }; // Blue
+    }
+  };
+
   const onFromDateChange = (event: any, selectedDate?: Date) => {
     setShowFromDatePicker(false);
     if (selectedDate) {
@@ -225,84 +243,90 @@ export default function HotelBookingsScreen() {
 
   const renderBookingItem = ({ item }: { item: HotelBooking }) => (
     <TouchableOpacity 
-      style={styles.bookingCard}
+      style={[styles.bookingCard, { 
+        backgroundColor: isDark ? '#1f2937' : '#fff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        shadowColor: isDark ? '#000' : '#000'
+      }]}
       onPress={() => router.push({ pathname: '/hotel/booking-details', params: { transactionId: item.unique_trans_id } })}
     >
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.booking_date)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Date:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.booking_date)}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Agent Name:</Text>
-        <Text style={styles.value} numberOfLines={2}>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Agent Name:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]} numberOfLines={2}>
           {item.agent_name}({item.agent_sl_no})
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking ID:</Text>
-        <View style={styles.bookingIdBadge}>
-          <Text style={styles.bookingIdText}>{item.unique_trans_id}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking ID:</Text>
+        <View style={[styles.bookingIdBadge, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}>
+          <Text style={[styles.bookingIdText, { color: '#fff' }]}>{item.unique_trans_id}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Brand:</Text>
-        <Text style={styles.value}>{item.api_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Brand:</Text>
+        <View style={[styles.brandBadge, getBrandColor(item.api_name)]}>
+          <Text style={styles.brandText}>{item.api_name}</Text>
+        </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Cost:</Text>
-        <Text style={[styles.value, styles.profit]}>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Cost:</Text>
+        <Text style={[styles.value, styles.profit, { color: isDark ? '#10b981' : '#059669' }]}>
           {item.currency} {parseFloat(item.total_price_selling).toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Payment:</Text>
-        <Text style={styles.value}>{item.payment_method}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Payment:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.payment_method}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Platform Type:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Platform Type:</Text>
         <View style={[styles.platformBadge, getPlatformColor(item.platform_type)]}>
           <Text style={styles.platformText}>{item.platform_type}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Status:</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
           <Text style={styles.statusText}>{item.status}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Check In:</Text>
-        <Text style={styles.value}>{formatDate(item.check_in)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Check In:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.check_in)}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Check Out:</Text>
-        <Text style={styles.value}>{formatDate(item.check_out)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Check Out:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.check_out)}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Hotel Bookings</Text>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>Hotel Bookings</Text>
           <TouchableOpacity
             style={styles.filterToggle}
             onPress={() => setShowFilters(!showFilters)}
           >
-            <Text style={styles.filterToggleText}>Filters</Text>
+            <Text style={[styles.filterToggleText, { color: '#fff' }]}>Filters</Text>
             <Ionicons
               name={showFilters ? 'chevron-up' : 'chevron-down'}
               size={20}
@@ -313,18 +337,21 @@ export default function HotelBookingsScreen() {
       </SafeAreaView>
 
       {showFilters && (
-        <View style={styles.filterContainer}>
+        <View style={[styles.filterContainer, { backgroundColor: isDark ? '#1f2937' : '#f8f9fa', borderBottomColor: isDark ? '#374151' : '#e5e7eb' }]}>
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>From Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>From Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#fff', 
+                  borderColor: isDark ? '#4b5563' : '#d1d5db' 
+                }]}
                 onPress={() => setShowFromDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#374151' }]}>
                   {filters.from_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showFromDatePicker && (
                 <DateTimePicker
@@ -337,15 +364,18 @@ export default function HotelBookingsScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>To Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>To Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#fff', 
+                  borderColor: isDark ? '#4b5563' : '#d1d5db' 
+                }]}
                 onPress={() => setShowToDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#374151' }]}>
                   {filters.to_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showToDatePicker && (
                 <DateTimePicker
@@ -360,38 +390,49 @@ export default function HotelBookingsScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Booking ID</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Booking ID</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#fff', 
+                  borderColor: isDark ? '#4b5563' : '#d1d5db',
+                  color: isDark ? '#f3f4f6' : '#374151'
+                }]}
                 value={filters.booking_id_or_pnr}
                 onChangeText={(text) => setFilters({ ...filters, booking_id_or_pnr: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Agent SL / Name</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Agent SL / Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#fff', 
+                  borderColor: isDark ? '#4b5563' : '#d1d5db',
+                  color: isDark ? '#f3f4f6' : '#374151'
+                }]}
                 value={filters.agent_sl_or_name}
                 onChangeText={(text) => setFilters({ ...filters, agent_sl_or_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Platform Type</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Platform Type</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#fff', 
+                borderColor: isDark ? '#4b5563' : '#d1d5db'
+              }]}>
                 <Picker
                   selectedValue={filters.platform_type || ''}
                   onValueChange={(value) => setFilters({ ...filters, platform_type: value })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#374151' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Platforms" value="" />
                   <Picker.Item label="B2B" value="B2B" />
@@ -401,14 +442,17 @@ export default function HotelBookingsScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Status</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Status</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#fff', 
+                borderColor: isDark ? '#4b5563' : '#d1d5db'
+              }]}>
                 <Picker
                   selectedValue={filters.status || ''}
                   onValueChange={(value) => setFilters({ ...filters, status: value })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#f3f4f6' : '#374151' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Statuses" value="" />
                   <Picker.Item label="CONFIRMED" value="CONFIRMED" />
@@ -422,11 +466,17 @@ export default function HotelBookingsScreen() {
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-              <Text style={styles.buttonText}>Reset</Text>
+            <TouchableOpacity 
+              style={[styles.resetButton, { backgroundColor: isDark ? '#6b7280' : '#f3f4f6', borderColor: isDark ? '#4b5563' : '#d1d5db' }]} 
+              onPress={handleReset}
+            >
+              <Text style={[styles.buttonText, { color: isDark ? '#f3f4f6' : '#374151' }]}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Text style={styles.buttonText}>Search</Text>
+            <TouchableOpacity 
+              style={[styles.searchButton, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]} 
+              onPress={handleSearch}
+            >
+              <Text style={[styles.buttonText, { color: '#fff' }]}>Search</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -434,7 +484,7 @@ export default function HotelBookingsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
         </View>
       ) : (
         <>
@@ -447,14 +497,14 @@ export default function HotelBookingsScreen() {
             onEndReachedThreshold={0.1}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No hotel bookings found</Text>
+                <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>No hotel bookings found</Text>
               </View>
             }
             ListFooterComponent={() => 
               isLoadingMore ? (
                 <View style={styles.loadMoreContainer}>
-                  <ActivityIndicator size="small" color="#1e40af" />
-                  <Text style={styles.loadMoreText}>Loading more...</Text>
+                  <ActivityIndicator size="small" color={isDark ? '#3b82f6' : '#1e40af'} />
+                  <Text style={[styles.loadMoreText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Loading more...</Text>
                 </View>
               ) : null
             }
@@ -468,13 +518,10 @@ export default function HotelBookingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -483,7 +530,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
   },
   headerButton: {
     padding: 4,
@@ -494,15 +540,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   filterToggleText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
   filterContainer: {
-    backgroundColor: '#fff',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   filterRow: {
     flexDirection: 'row',
@@ -515,37 +558,29 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   dateInput: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dateText: {
     fontSize: 14,
-    color: '#333',
   },
   pickerContainer: {
-    backgroundColor: '#f3f4f6',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     overflow: 'hidden',
     minHeight: 50,
   },
@@ -560,20 +595,18 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     flex: 1,
-    backgroundColor: '#1e40af',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
   resetButton: {
     flex: 1,
-    backgroundColor: '#6b7280',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
+    borderWidth: 1,
   },
   buttonText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -586,11 +619,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   bookingCard: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    borderWidth: 1,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -604,28 +636,23 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
     flex: 1,
   },
   value: {
     fontSize: 13,
-    color: '#333',
     fontWeight: '600',
     flex: 1.5,
     textAlign: 'right',
   },
   profit: {
-    color: '#10b981',
   },
   bookingIdBadge: {
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   bookingIdText: {
-    color: '#fff',
     fontSize: 11,
     fontWeight: 'bold',
   },
@@ -649,13 +676,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
+  brandBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  brandText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
   emptyContainer: {
     padding: 32,
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
   },
   loadMoreContainer: {
     flexDirection: 'row',
@@ -666,6 +702,5 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 14,
-    color: '#666',
   },
 });

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTheme } from '../../hooks/use-theme';
 import { flightService } from '@/services/flight';
 import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { FlightBookingDetails } from '@/types/flight-details';
@@ -29,9 +29,8 @@ export default function FlightBookingDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
 
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const tintColor = useThemeColor({}, 'tint');
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     loadBookingDetails();
@@ -164,10 +163,10 @@ export default function FlightBookingDetailsScreen() {
     const operationColor = getOperationTypeColor(log.operation_type);
     
     return (
-      <View key={index} style={styles.tableRow}>
+      <View key={index} style={[styles.tableRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
         {/* Date & Time Column */}
         <View style={[styles.tableCell, { flex: 1.2 }]}>
-          <Text style={styles.tableCellText}>{formatDate(log.created_at)}</Text>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>{formatDate(log.created_at)}</Text>
         </View>
         
         {/* Activity Column */}
@@ -179,23 +178,23 @@ export default function FlightBookingDetailsScreen() {
         
         {/* Description Column */}
         <View style={[styles.tableCell, { flex: 1.5 }]}>
-          <Text style={styles.tableCellText}>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>
             {operationDetails ? operationDetails.remarks || operationDetails.action : log.operation_details}
           </Text>
         </View>
         
         {/* Done By Column */}
         <View style={styles.tableCell}>
-          <Text style={styles.tableCellText}>{log.done_by}</Text>
+          <Text style={[styles.tableCellText, { color: isDark ? '#d1d5db' : '#374151' }]}>{log.done_by}</Text>
         </View>
       </View>
     );
   };
 
   const renderOperationLogsTable = () => (
-    <View style={styles.tableContainer}>
+    <View style={[styles.tableContainer, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
       {/* Table Header */}
-      <View style={styles.tableHeader}>
+      <View style={[styles.tableHeader, { backgroundColor: isDark ? '#374151' : '#1e40af' }]}>
         <View style={[styles.tableHeaderCell, { flex: 1.2 }]}>
           <Text style={styles.tableHeaderText}>Date & Time</Text>
         </View>
@@ -216,52 +215,52 @@ export default function FlightBookingDetailsScreen() {
   );
 
   const renderPassengerInfo = (ticketInfo: any, index: number) => (
-    <View key={index} style={styles.passengerCard}>
+    <View key={index} style={[styles.passengerCard, { backgroundColor: isDark ? '#1f2937' : 'rgba(0, 0, 0, 0.02)' }]}>
       <View style={styles.passengerHeader}>
-        <Text style={[styles.passengerTitle, { color: textColor }]}>
+        <Text style={[styles.passengerTitle, { color: isDark ? '#fff' : '#000' }]}>
           Passenger {index + 1}
         </Text>
-        <Text style={[styles.ticketNumber, { color: tintColor }]}>
+        <Text style={[styles.ticketNumber, { color: isDark ? '#60a5fa' : '#1e40af' }]}>
           Ticket: {ticketInfo.TicketNumbers?.join(', ') || 'N/A'}
         </Text>
       </View>
 
       <View style={styles.passengerDetails}>
-        <Text style={[styles.passengerName, { color: textColor }]}>
+        <Text style={[styles.passengerName, { color: isDark ? '#fff' : '#000' }]}>
           {ticketInfo.PassengerInfo?.NameElement?.Title} {ticketInfo.PassengerInfo?.NameElement?.FirstName} {ticketInfo.PassengerInfo?.NameElement?.LastName}
         </Text>
         
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Gender:</Text>
-          <Text style={[styles.detailValue, { color: textColor }]}>
-            {ticketInfo.PassengerInfo?.Gender}
+          <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Gender:</Text>
+                    <Text style={[styles.detailValue, { color: isDark ? '#fff' : '#000' }]}>
+            {ticketInfo.PassengerInfo?.PersonNameInfo?.Gender || 'N/A'}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date of Birth:</Text>
-          <Text style={[styles.detailValue, { color: textColor }]}>
+          <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Date of Birth:</Text>
+          <Text style={[styles.detailValue, { color: isDark ? '#fff' : '#000' }]}>
             {ticketInfo.PassengerInfo?.DateOfBirth}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Document:</Text>
-          <Text style={[styles.detailValue, { color: textColor }]}>
+          <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Document:</Text>
+          <Text style={[styles.detailValue, { color: isDark ? '#fff' : '#000' }]}>
             {ticketInfo.PassengerInfo?.DocumentInfo?.DocumentType?.toUpperCase()} - {ticketInfo.PassengerInfo?.DocumentInfo?.DocumentNumber}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Nationality:</Text>
-          <Text style={[styles.detailValue, { color: textColor }]}>
+          <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Nationality:</Text>
+          <Text style={[styles.detailValue, { color: isDark ? '#fff' : '#000' }]}>
             {ticketInfo.PassengerInfo?.DocumentInfo?.Nationality}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Contact:</Text>
-          <Text style={[styles.detailValue, { color: textColor }]}>
+          <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Contact:</Text>
+          <Text style={[styles.detailValue, { color: isDark ? '#fff' : '#000' }]}>
             {ticketInfo.PassengerInfo?.ContactInfo?.Email}
           </Text>
         </View>
@@ -283,48 +282,48 @@ export default function FlightBookingDetailsScreen() {
           />
         )}
         <View style={styles.flightInfo}>
-          <Text style={[styles.flightNumber, { color: textColor }]}>
+          <Text style={[styles.flightNumber, { color: isDark ? '#fff' : '#000' }]}>
             {segment.Airline || 'N/A'} {segment.FlightNumber || 'N/A'}
           </Text>
-          <Text style={styles.flightClass}>{segment.ServiceClass || 'N/A'}</Text>
+          <Text style={[styles.flightClass, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{segment.ServiceClass || 'N/A'}</Text>
         </View>
       </View>
 
       <View style={styles.routeContainer}>
         <View style={styles.routePoint}>
-          <Text style={[styles.airportCode, { color: textColor }]}>{segment.Origin || 'N/A'}</Text>
-          <Text style={styles.airportName}>{segment.OriginName || 'N/A'}</Text>
-          <Text style={[styles.flightTime, { color: tintColor }]}>
+          <Text style={[styles.airportCode, { color: isDark ? '#fff' : '#000' }]}>{segment.Origin || 'N/A'}</Text>
+          <Text style={[styles.airportName, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{segment.OriginName || 'N/A'}</Text>
+          <Text style={[styles.flightTime, { color: isDark ? '#60a5fa' : '#1e40af' }]}>
             {segment.Departure ? formatTime(segment.Departure) : 'N/A'}
           </Text>
-          <Text style={styles.flightDate}>
+          <Text style={[styles.flightDate, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
             {segment.Departure ? formatDateOnly(segment.Departure) : 'N/A'}
           </Text>
         </View>
 
         <View style={styles.flightPath}>
-          <View style={styles.flightLine} />
-          <Ionicons name="airplane" size={20} color={tintColor} style={styles.airplaneIcon} />
-          <Text style={styles.duration}>{segment.Duration?.join(', ') || 'N/A'}</Text>
+          <View style={[styles.flightLine, { backgroundColor: isDark ? '#374151' : '#d1d5db' }]} />
+          <Ionicons name="airplane" size={20} color={isDark ? '#60a5fa' : '#1e40af'} style={styles.airplaneIcon} />
+          <Text style={[styles.duration, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{segment.Duration?.join(', ') || 'N/A'}</Text>
         </View>
 
         <View style={styles.routePoint}>
-          <Text style={[styles.airportCode, { color: textColor }]}>{segment.Destination || 'N/A'}</Text>
-          <Text style={styles.airportName}>{segment.DestinationName || 'N/A'}</Text>
-          <Text style={[styles.flightTime, { color: tintColor }]}>
+          <Text style={[styles.airportCode, { color: isDark ? '#fff' : '#000' }]}>{segment.Destination || 'N/A'}</Text>
+          <Text style={[styles.airportName, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{segment.DestinationName || 'N/A'}</Text>
+          <Text style={[styles.flightTime, { color: isDark ? '#60a5fa' : '#1e40af' }]}>
             {segment.Arrival ? formatTime(segment.Arrival) : 'N/A'}
           </Text>
-          <Text style={styles.flightDate}>
+          <Text style={[styles.flightDate, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
             {segment.Arrival ? formatDateOnly(segment.Arrival) : 'N/A'}
           </Text>
         </View>
       </View>
 
       {segment.Baggage && segment.Baggage.length > 0 && (
-        <View style={styles.baggageInfo}>
-          <Text style={styles.baggageTitle}>Baggage Allowance</Text>
+        <View style={[styles.baggageInfo, { borderTopColor: isDark ? '#374151' : '#e5e7eb' }]}>
+          <Text style={[styles.baggageTitle, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Baggage Allowance</Text>
           {segment.Baggage.map((baggage: any, idx: number) => (
-            <Text key={idx} style={styles.baggageText}>
+            <Text key={idx} style={[styles.baggageText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
               {baggage.Amount} {baggage.Units} for {baggage.PassengerTypeCode}
             </Text>
           ))}
@@ -335,35 +334,35 @@ export default function FlightBookingDetailsScreen() {
   };
 
   const renderPriceBreakdown = () => (
-    <View style={styles.priceCard}>
-      <Text style={[styles.sectionTitle, { color: textColor }]}>Price Breakdown</Text>
+    <View style={[styles.priceCard, { backgroundColor: isDark ? '#1f2937' : 'rgba(0, 0, 0, 0.02)' }]}>
+      <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>Price Breakdown</Text>
       
       <View style={styles.priceRow}>
-        <Text style={styles.priceLabel}>Base Fare</Text>
-        <Text style={[styles.priceValue, { color: textColor }]}>
+        <Text style={[styles.priceLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Base Fare</Text>
+        <Text style={[styles.priceValue, { color: isDark ? '#fff' : '#000' }]}>
           {bookingDetails?.currency} {bookingDetails?.FlightInfo?.TicketPriceComponent?.BasePrice}
         </Text>
       </View>
 
       <View style={styles.priceRow}>
-        <Text style={styles.priceLabel}>Taxes & Fees</Text>
-        <Text style={[styles.priceValue, { color: textColor }]}>
+        <Text style={[styles.priceLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Taxes & Fees</Text>
+        <Text style={[styles.priceValue, { color: isDark ? '#fff' : '#000' }]}>
           {bookingDetails?.currency} {bookingDetails?.FlightInfo?.TicketPriceComponent?.Taxes}
         </Text>
       </View>
 
       {bookingDetails?.FlightInfo?.TicketPriceComponent?.ExtraServiceCharge !== '0.00' && (
         <View style={styles.priceRow}>
-          <Text style={styles.priceLabel}>Service Charge</Text>
-          <Text style={[styles.priceValue, { color: textColor }]}>
+          <Text style={[styles.priceLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Service Charge</Text>
+          <Text style={[styles.priceValue, { color: isDark ? '#fff' : '#000' }]}>
             {bookingDetails?.currency} {bookingDetails?.FlightInfo?.TicketPriceComponent?.ExtraServiceCharge}
           </Text>
         </View>
       )}
 
-      <View style={[styles.priceRow, styles.totalRow]}>
-        <Text style={[styles.totalLabel, { color: textColor }]}>Total Amount</Text>
-        <Text style={[styles.totalValue, { color: tintColor }]}>
+      <View style={[styles.priceRow, styles.totalRow, { borderTopColor: isDark ? '#374151' : '#e5e7eb' }]}>
+        <Text style={[styles.totalLabel, { color: isDark ? '#fff' : '#000' }]}>Total Amount</Text>
+        <Text style={[styles.totalValue, { color: isDark ? '#60a5fa' : '#1e40af' }]}>
           {bookingDetails?.currency} {bookingDetails?.FlightInfo?.TicketPriceComponent?.TotalPrice}
         </Text>
       </View>
@@ -372,19 +371,34 @@ export default function FlightBookingDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={tintColor} />
-        <Text style={styles.loadingText}>Loading booking details...</Text>
+      <View style={[
+        styles.loadingContainer,
+        { backgroundColor: isDark ? '#111827' : '#f5f5f5' }
+      ]}>
+        <ActivityIndicator size="large" color={isDark ? '#60a5fa' : '#1e40af'} />
+        <Text style={[
+          styles.loadingText,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>Loading booking details...</Text>
       </View>
     );
   }
 
   if (!bookingDetails) {
     return (
-      <View style={styles.errorContainer}>
+      <View style={[
+        styles.errorContainer,
+        { backgroundColor: isDark ? '#111827' : '#f5f5f5' }
+      ]}>
         <Ionicons name="alert-circle" size={64} color="#ef4444" />
-        <Text style={styles.errorText}>Failed to load booking details</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: tintColor }]} onPress={loadBookingDetails}>
+        <Text style={[
+          styles.errorText,
+          { color: isDark ? '#f3f4f6' : '#333' }
+        ]}>Failed to load booking details</Text>
+        <TouchableOpacity style={[
+          styles.retryButton, 
+          { backgroundColor: isDark ? '#60a5fa' : '#1e40af' }
+        ]} onPress={loadBookingDetails}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -392,10 +406,19 @@ export default function FlightBookingDetailsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      { backgroundColor: isDark ? '#111827' : '#f5f5f5' }
+    ]}>
       {/* Header */}
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+      <SafeAreaView style={[
+        styles.safeArea,
+        { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+      ]} edges={['top']}>
+        <View style={[
+          styles.header,
+          { backgroundColor: isDark ? '#1f2937' : '#1e40af' }
+        ]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -406,7 +429,7 @@ export default function FlightBookingDetailsScreen() {
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         {bookingDetails && (
-          <View style={styles.heroSection}>
+          <View style={[styles.heroSection, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
             <View style={styles.flightRoute}>
               {bookingDetails.FlightInfo?.Directions?.[0]?.[0] && (
                 <>
@@ -434,20 +457,35 @@ export default function FlightBookingDetailsScreen() {
         )}
 
         {/* Booking Status Header */}
-        <View style={styles.statusHeader}>
+        <View style={[
+          styles.statusHeader,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
           <View style={styles.statusRow}>
-            <Text style={[styles.bookingRef, { color: textColor }]}>
+            <Text style={[
+              styles.bookingRef, 
+              { color: isDark ? '#f3f4f6' : '#333' }
+            ]}>
               PNR: {bookingDetails?.PNR}
             </Text>
-            <Text style={styles.bookingTime}>
+            <Text style={[
+              styles.bookingTime,
+              { color: isDark ? '#9ca3af' : '#666' }
+            ]}>
               Booked: {bookingDetails ? formatDate(bookingDetails.BookingTime) : 'N/A'}
             </Text>
           </View>
         </View>
 
         {/* Flight Information */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Flight Details</Text>
+        <View style={[
+          styles.section,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
+          <Text style={[
+            styles.sectionTitle, 
+            { color: isDark ? '#60a5fa' : '#1e40af' }
+          ]}>Flight Details</Text>
           {bookingDetails.FlightInfo?.Directions?.map((directionGroup: any[], groupIndex: number) => 
             directionGroup?.map((direction: any, dirIndex: number) => (
               <View key={`${groupIndex}-${dirIndex}`}>
@@ -460,37 +498,67 @@ export default function FlightBookingDetailsScreen() {
           {/* Fallback if no flight directions are available */}
           {(!bookingDetails.FlightInfo?.Directions || bookingDetails.FlightInfo.Directions.length === 0) && (
             <View style={styles.noDataContainer}>
-              <Text style={[styles.noDataText, { color: textColor }]}>No flight information available</Text>
+              <Text style={[
+                styles.noDataText, 
+                { color: isDark ? '#9ca3af' : '#666' }
+              ]}>No flight information available</Text>
             </View>
           )}
         </View>
 
         {/* Passenger Information */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Passenger Information</Text>
+        <View style={[
+          styles.section,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
+          <Text style={[
+            styles.sectionTitle, 
+            { color: isDark ? '#60a5fa' : '#1e40af' }
+          ]}>Passenger Information</Text>
           {bookingDetails.TicketInfoes?.map((ticketInfo: any, index: number) => 
             renderPassengerInfo(ticketInfo, index)
           )}
         </View>
 
         {/* Price Breakdown */}
-        <View style={styles.section}>
+        <View style={[
+          styles.section,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
           {renderPriceBreakdown()}
         </View>
 
         {/* Agent Information */}
         {bookingDetails.agent_info && (
-          <View style={styles.section}>
-            <View style={styles.agentCard}>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>Agent Information</Text>
-              <Text style={[styles.agentName, { color: textColor }]}>
+          <View style={[
+            styles.section,
+            { backgroundColor: isDark ? '#1f2937' : '#fff' }
+          ]}>
+            <View style={[
+              styles.agentCard,
+              { backgroundColor: isDark ? '#1f2937' : '#fff' }
+            ]}>
+              <Text style={[
+                styles.sectionTitle, 
+                { color: isDark ? '#60a5fa' : '#1e40af' }
+              ]}>Agent Information</Text>
+              <Text style={[
+                styles.agentName, 
+                { color: isDark ? '#fff' : '#000' }
+              ]}>
                 {bookingDetails.agent_info.agent_name}
               </Text>
-              <Text style={styles.agentContact}>
+              <Text style={[
+                styles.agentContact,
+                { color: isDark ? '#9ca3af' : '#6b7280' }
+              ]}>
                 {bookingDetails.agent_info.Email}
               </Text>
               {bookingDetails.agent_info.Phone && (
-                <Text style={styles.agentContact}>
+                <Text style={[
+                  styles.agentContact,
+                  { color: isDark ? '#9ca3af' : '#6b7280' }
+                ]}>
                   {bookingDetails.agent_info.PhoneCountryCode} {bookingDetails.agent_info.Phone}
                 </Text>
               )}
@@ -499,33 +567,48 @@ export default function FlightBookingDetailsScreen() {
         )}
 
         {/* Additional Information */}
-        <View style={styles.section}>
-          <View style={styles.infoCard}>
-            <Text style={[styles.sectionTitle, { color: textColor }]}>Additional Information</Text>
+        <View style={[
+          styles.section,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
+          <View style={[styles.infoCard, { backgroundColor: isDark ? '#1f2937' : 'rgba(0, 0, 0, 0.02)' }]}>
+            <Text style={[
+              styles.sectionTitle, 
+              { color: isDark ? '#60a5fa' : '#1e40af' }
+            ]}>Additional Information</Text>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Payment Status:</Text>
+              <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Payment Status:</Text>
               <Text style={[styles.detailValue, { color: getStatusColor(bookingDetails.PaymentStatus) }]}>
                 {bookingDetails.PaymentStatus}
               </Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Ticket Status:</Text>
+              <Text style={[styles.detailLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Ticket Status:</Text>
               <Text style={[styles.detailValue, { color: getStatusColor(bookingDetails.TicketStatus) }]}>
                 {bookingDetails.TicketStatus}
               </Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Support Status:</Text>
-              <Text style={[styles.detailValue, { color: textColor }]}>
+              <Text style={[
+                styles.detailLabel,
+                { color: isDark ? '#9ca3af' : '#6b7280' }
+              ]}>Support Status:</Text>
+              <Text style={[
+                styles.detailValue, 
+                { color: isDark ? '#fff' : '#000' }
+              ]}>
                 {bookingDetails.SupportStatus}
               </Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Refundable:</Text>
+              <Text style={[
+                styles.detailLabel,
+                { color: isDark ? '#9ca3af' : '#6b7280' }
+              ]}>Refundable:</Text>
               <Text style={[styles.detailValue, { color: bookingDetails.Refundable ? '#22c55e' : '#ef4444' }]}>
                 {bookingDetails.Refundable ? 'Yes' : 'No'}
               </Text>
@@ -533,8 +616,14 @@ export default function FlightBookingDetailsScreen() {
 
             {bookingDetails.IssueTime && (
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Issue Time:</Text>
-                <Text style={[styles.detailValue, { color: textColor }]}>
+                <Text style={[
+                  styles.detailLabel,
+                  { color: isDark ? '#9ca3af' : '#6b7280' }
+                ]}>Issue Time:</Text>
+                <Text style={[
+                  styles.detailValue, 
+                  { color: isDark ? '#fff' : '#000' }
+                ]}>
                   {formatDate(bookingDetails.IssueTime)}
                 </Text>
               </View>
@@ -543,15 +632,24 @@ export default function FlightBookingDetailsScreen() {
         </View>
 
         {/* Booking Operation Log */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Booking Operation Log</Text>
+        <View style={[
+          styles.section,
+          { backgroundColor: isDark ? '#1f2937' : '#fff' }
+        ]}>
+          <Text style={[
+            styles.sectionTitle, 
+            { color: isDark ? '#60a5fa' : '#1e40af' }
+          ]}>Booking Operation Log</Text>
           {logsLoading ? (
-            <ActivityIndicator size="small" color={tintColor} style={styles.logsLoading} />
+            <ActivityIndicator size="small" color={isDark ? '#60a5fa' : '#1e40af'} style={styles.logsLoading} />
           ) : operationLogs.length > 0 ? (
             renderOperationLogsTable()
           ) : (
             <View style={styles.noDataContainer}>
-              <Text style={[styles.noDataText, { color: textColor }]}>No operation logs available</Text>
+              <Text style={[
+                styles.noDataText, 
+                { color: isDark ? '#9ca3af' : '#6b7280' }
+              ]}>No operation logs available</Text>
             </View>
           )}
         </View>
@@ -565,17 +663,14 @@ export default function FlightBookingDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1e40af',
   },
   backButton: {
     marginRight: 16,

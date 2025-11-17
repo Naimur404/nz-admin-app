@@ -14,8 +14,11 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function HotelBookingDetailsScreen() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const router = useRouter();
   const { transactionId } = useLocalSearchParams();
   const [booking, setBooking] = useState<HotelBookingDetails | null>(null);
@@ -79,17 +82,17 @@ export default function HotelBookingDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
-          <View style={styles.header}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+          <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Hotel Booking Details</Text>
+            <Text style={[styles.headerTitle, { color: '#fff' }]}>Hotel Booking Details</Text>
           </View>
         </SafeAreaView>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
         </View>
       </View>
     );
@@ -97,30 +100,30 @@ export default function HotelBookingDetailsScreen() {
 
   if (!booking) {
     return (
-      <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
-          <View style={styles.header}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+          <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Hotel Booking Details</Text>
+            <Text style={[styles.headerTitle, { color: '#fff' }]}>Hotel Booking Details</Text>
           </View>
         </SafeAreaView>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Booking not found</Text>
+          <Text style={[styles.errorText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking not found</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Hotel Booking Details</Text>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>Hotel Booking Details</Text>
         </View>
       </SafeAreaView>
 
@@ -136,10 +139,10 @@ export default function HotelBookingDetailsScreen() {
 
         {/* Booking ID and Status */}
         <View style={styles.section}>
-          <View style={styles.bookingHeader}>
+          <View style={[styles.bookingHeader, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.bookingIdContainer}>
-              <Text style={styles.bookingIdLabel}>Booking ID</Text>
-              <Text style={styles.bookingIdValue}>{booking.unique_trans_id}</Text>
+              <Text style={[styles.bookingIdLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking ID</Text>
+              <Text style={[styles.bookingIdValue, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.unique_trans_id}</Text>
             </View>
             <View style={[styles.statusBadge, getStatusColor(booking.status)]}>
               <Text style={styles.statusText}>{booking.status}</Text>
@@ -149,97 +152,97 @@ export default function HotelBookingDetailsScreen() {
 
         {/* Hotel Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hotel Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Hotel Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Hotel Name:</Text>
-              <Text style={styles.value}>{booking.hotel_name}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Hotel Name:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.hotel_name}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>City:</Text>
-              <Text style={styles.value}>{booking.city}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>City:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.city}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Address:</Text>
-              <Text style={styles.value}>{booking.address}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Address:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.address}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Phone:</Text>
-              <Text style={styles.value}>{booking.hotel_phone_number}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Phone:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.hotel_phone_number}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.value}>{booking.hotel_email_address}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Email:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.hotel_email_address}</Text>
             </View>
           </View>
         </View>
 
         {/* Booking Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Booking Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Booking Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Booking Date:</Text>
-              <Text style={styles.value}>{formatDateTime(booking.booking_date)}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Date:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDateTime(booking.booking_date)}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Check In:</Text>
-              <Text style={styles.value}>{formatDate(booking.check_in)}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Check In:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(booking.check_in)}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Check Out:</Text>
-              <Text style={styles.value}>{formatDate(booking.check_out)}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Check Out:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(booking.check_out)}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Platform Type:</Text>
-              <Text style={styles.value}>{booking.platform_type}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Platform Type:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.platform_type}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Reference No:</Text>
-              <Text style={styles.value}>{booking.reference_no}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Reference No:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.reference_no}</Text>
             </View>
           </View>
         </View>
 
         {/* Guest Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Guest Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Guest Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Lead Guest:</Text>
-              <Text style={styles.value}>{booking.lead_pax_name}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Lead Guest:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.lead_pax_name}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Guest Email:</Text>
-              <Text style={styles.value}>{booking.guest_email}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Guest Email:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.guest_email}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Contact No:</Text>
-              <Text style={styles.value}>{booking.contact_no}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Contact No:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.contact_no}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Total Guests:</Text>
-              <Text style={styles.value}>{booking.guests.length}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Total Guests:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.guests.length}</Text>
             </View>
           </View>
         </View>
 
         {/* Room Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Room Information</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Room Information</Text>
           {booking.rooms.map((room, index) => (
-            <View key={room.id} style={styles.card}>
+            <View key={room.id} style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
               <View style={styles.row}>
-                <Text style={styles.label}>Room {room.room_no}:</Text>
-                <Text style={styles.value}>{room.room_type}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Room {room.room_no}:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{room.room_type}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Status:</Text>
-                <Text style={[styles.value, styles.price]}>{room.booking_status}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Status:</Text>
+                <Text style={[styles.value, styles.price, { color: isDark ? '#10b981' : '#059669' }]}>{room.booking_status}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Price:</Text>
-                <Text style={[styles.value, styles.price]}>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Price:</Text>
+                <Text style={[styles.value, styles.price, { color: isDark ? '#10b981' : '#059669' }]}>
                   {room.currency} {parseFloat(room.price).toFixed(2)}
                 </Text>
               </View>
@@ -249,25 +252,25 @@ export default function HotelBookingDetailsScreen() {
 
         {/* Guest List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Guest List</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Guest List</Text>
           {booking.guests.map((guest, index) => (
-            <View key={guest.id} style={styles.card}>
+            <View key={guest.id} style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
               <View style={styles.row}>
-                <Text style={styles.label}>Name:</Text>
-                <Text style={styles.value}>{guest.full_name}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Name:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{guest.full_name}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Type:</Text>
-                <Text style={styles.value}>{guest.type} {guest.is_lead ? '(Lead)' : ''}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Type:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{guest.type} {guest.is_lead ? '(Lead)' : ''}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Room:</Text>
-                <Text style={styles.value}>{guest.room_no}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Room:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{guest.room_no}</Text>
               </View>
               {guest.type === 'Child' && (
                 <View style={styles.row}>
-                  <Text style={styles.label}>Age:</Text>
-                  <Text style={styles.value}>{guest.child_age} years</Text>
+                  <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Age:</Text>
+                  <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{guest.child_age} years</Text>
                 </View>
               )}
             </View>
@@ -276,31 +279,31 @@ export default function HotelBookingDetailsScreen() {
 
         {/* Financial Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Financial Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Financial Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Selling Price:</Text>
-              <Text style={[styles.value, styles.price]}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Selling Price:</Text>
+              <Text style={[styles.value, styles.price, { color: isDark ? '#10b981' : '#059669' }]}>
                 {booking.price_breakdown.currency} {parseFloat(booking.total_price_selling).toFixed(2)}
               </Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Original Price:</Text>
-              <Text style={[styles.value, styles.price]}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Original Price:</Text>
+              <Text style={[styles.value, styles.price, { color: isDark ? '#10b981' : '#059669' }]}>
                 {booking.original_price_breakdown.original_currency} {parseFloat(booking.original_total_price).toFixed(2)}
               </Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Payment Method:</Text>
-              <Text style={styles.value}>{booking.payment_method}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Payment Method:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.payment_method}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Transaction Status:</Text>
-              <Text style={styles.value}>{booking.trans_status}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Transaction Status:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.trans_status}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Customer Payment:</Text>
-              <Text style={styles.value}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Customer Payment:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                 {booking.price_breakdown.currency} {parseFloat(booking.pay_amount_from_customer).toFixed(2)}
               </Text>
             </View>
@@ -309,15 +312,15 @@ export default function HotelBookingDetailsScreen() {
 
         {/* Additional Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Additional Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Booking Time Limit:</Text>
-              <Text style={styles.value}>{formatDateTime(booking.booking_time_limit)}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Time Limit:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDateTime(booking.booking_time_limit)}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Status Date:</Text>
-              <Text style={styles.value}>{formatDateTime(booking.status_date)}</Text>
+              <Text style={[styles.label, { color: '#fff' }]}>Status Date:</Text>
+              <Text style={[styles.value, { color: '#fff' }]}>{formatDateTime(booking.status_date)}</Text>
             </View>
             {booking.agent_request_status && (
               <View style={styles.row}>
@@ -349,22 +352,43 @@ export default function HotelBookingDetailsScreen() {
         {/* Cancellation Policies */}
         {booking.cancellation_policies.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Cancellation Policies</Text>
+            <Text style={[
+              styles.sectionTitle,
+              { color: isDark ? '#60a5fa' : '#1e40af' }
+            ]}>Cancellation Policies</Text>
             {booking.cancellation_policies.map((policy, index) => (
-              <View key={policy.id} style={styles.card}>
+              <View key={policy.id} style={[
+                styles.card,
+                { backgroundColor: isDark ? '#1f2937' : '#fff' }
+              ]}>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Period:</Text>
-                  <Text style={styles.value}>{policy.from_date} to {policy.to_date}</Text>
+                  <Text style={[
+                    styles.label,
+                    { color: isDark ? '#9ca3af' : '#666' }
+                  ]}>Period:</Text>
+                  <Text style={[
+                    styles.value,
+                    { color: isDark ? '#f3f4f6' : '#333' }
+                  ]}>{policy.from_date} to {policy.to_date}</Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Cancellation Price:</Text>
+                  <Text style={[
+                    styles.label,
+                    { color: isDark ? '#9ca3af' : '#666' }
+                  ]}>Cancellation Price:</Text>
                   <Text style={[styles.value, styles.price]}>
                     {policy.currency} {parseFloat(policy.cancellation_price).toFixed(2)}
                   </Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Information:</Text>
-                  <Text style={styles.value}>{policy.essential_information}</Text>
+                  <Text style={[
+                    styles.label,
+                    { color: isDark ? '#9ca3af' : '#666' }
+                  ]}>Information:</Text>
+                  <Text style={[
+                    styles.value,
+                    { color: isDark ? '#f3f4f6' : '#333' }
+                  ]}>{policy.essential_information}</Text>
                 </View>
               </View>
             ))}
@@ -374,9 +398,18 @@ export default function HotelBookingDetailsScreen() {
         {/* Important Information */}
         {booking.must_know_info.generalInfo && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Important Information</Text>
-            <View style={styles.card}>
-              <Text style={styles.generalInfo}>{booking.must_know_info.generalInfo}</Text>
+            <Text style={[
+              styles.sectionTitle,
+              { color: isDark ? '#60a5fa' : '#1e40af' }
+            ]}>Important Information</Text>
+            <View style={[
+              styles.card,
+              { backgroundColor: isDark ? '#1f2937' : '#fff' }
+            ]}>
+              <Text style={[
+                styles.generalInfo,
+                { color: isDark ? '#f3f4f6' : '#333' }
+              ]}>{booking.must_know_info.generalInfo}</Text>
             </View>
           </View>
         )}
@@ -388,13 +421,10 @@ export default function HotelBookingDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -428,7 +458,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
   },
   section: {
     marginBottom: 20,
@@ -436,11 +465,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e40af',
     marginBottom: 12,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     shadowColor: '#000',
@@ -450,7 +477,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   bookingHeader: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     flexDirection: 'row',
@@ -467,13 +493,11 @@ const styles = StyleSheet.create({
   },
   bookingIdLabel: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 4,
   },
   bookingIdValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e40af',
   },
   statusBadge: {
     paddingHorizontal: 16,
@@ -495,13 +519,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
     flex: 1,
   },
   value: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
@@ -517,7 +539,6 @@ const styles = StyleSheet.create({
   },
   generalInfo: {
     fontSize: 14,
-    color: '#333',
     lineHeight: 20,
   },
 });
