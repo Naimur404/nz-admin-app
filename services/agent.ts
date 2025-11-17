@@ -114,6 +114,25 @@ class AgentService {
     }
   }
 
+  async allowMarketForAgent(agentId: string, marketId: number): Promise<any> {
+    try {
+      console.log(`Allowing market ${marketId} for agent ${agentId}`);
+      const response = await apiClient.post(`/admin/allow-markets`, {
+        agent_id: agentId,
+        market_id: marketId
+      });
+      console.log('Allow market response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error allowing market for agent:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
+
   async verifyAgentDocument(documentId: string, approval: number): Promise<any> {
     try {
       console.log(`Verifying document ${documentId} with approval ${approval}`);

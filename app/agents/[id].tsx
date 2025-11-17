@@ -5,6 +5,7 @@ import { marketService } from '@/services/market';
 import { AgentDetails, AgentDocument } from '@/types/agent';
 import { MarketItem } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -40,9 +41,11 @@ export default function AgentDetailsScreen() {
   const [showMarketModal, setShowMarketModal] = useState(false);
   const [availableMarkets, setAvailableMarkets] = useState<MarketItem[]>([]);
   const [selectedMarkets, setSelectedMarkets] = useState<{ [key: number]: boolean }>({});
+  const [selectedNewMarket, setSelectedNewMarket] = useState<string>(''); // For the dropdown selection
   const [updatingOtp, setUpdatingOtp] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [updatingMarkets, setUpdatingMarkets] = useState(false);
+  const [creatingMarket, setCreatingMarket] = useState(false);
 
   // Document verification state
   const [showDocumentModal, setShowDocumentModal] = useState(false);
@@ -80,6 +83,7 @@ export default function AgentDetailsScreen() {
           marketsMap[market.market_id] = market.is_active === 1;
         });
       }
+      console.log('Initialized selected markets:', marketsMap);
       setSelectedMarkets(marketsMap);
     } catch (error) {
       console.error('Error fetching agent details:', error);
@@ -181,10 +185,46 @@ export default function AgentDetailsScreen() {
   };
 
   const handleMarketToggle = (marketId: number) => {
-    setSelectedMarkets(prev => ({
-      ...prev,
-      [marketId]: !prev[marketId]
-    }));
+    setSelectedMarkets(prev => {
+      const current = prev[marketId];
+      const newValue = current === undefined ? true : !current; // Default to true for new markets
+      
+      console.log(`Toggling market ${marketId} from ${current} to ${newValue}`);
+      
+      return {
+        ...prev,
+        [marketId]: newValue
+      };
+    });
+  };
+
+  const handleCreateMarket = async () => {
+    if (!selectedNewMarket) {
+      Alert.alert('Error', 'Please select a market first');
+      return;
+    }
+
+    setCreatingMarket(true);
+    try {
+      const marketId = parseInt(selectedNewMarket);
+      await agentService.allowMarketForAgent(id as string, marketId);
+      
+      // Add the market to selected markets as active
+      setSelectedMarkets(prev => ({
+        ...prev,
+        [marketId]: true
+      }));
+      
+      // Reset the dropdown selection
+      setSelectedNewMarket('');
+      
+      Alert.alert('Success', 'Market allowed for agent successfully');
+    } catch (error) {
+      console.error('Error allowing market for agent:', error);
+      Alert.alert('Error', 'Failed to allow market for agent');
+    } finally {
+      setCreatingMarket(false);
+    }
   };
 
   const handleMarketUpdate = async () => {
@@ -192,17 +232,47 @@ export default function AgentDetailsScreen() {
     
     setUpdatingMarkets(true);
     try {
-      const marketList = Object.entries(selectedMarkets).map(([marketId, isActive]) => ({
-        id: parseInt(marketId),
-        status: isActive ? 1 : 0
-      }));
+      // Get the original market states from agent data
+      const originalMarkets: { [key: number]: boolean } = {};
+      if (agentData.available_markets) {
+        agentData.available_markets.forEach(market => {
+          originalMarkets[market.market_id] = market.is_active === 1;
+        });
+      }
+
+      // Only send markets that have changed or are newly added
+      const marketList = Object.entries(selectedMarkets)
+        .filter(([marketId, isActive]) => {
+          const id = parseInt(marketId, 10);
+          // Include if:
+          // 1. It's a new market (not in original)
+          // 2. Status has changed from original
+          // 3. Market is being activated (isActive = true)
+          return isActive === true && (
+            !(id in originalMarkets) || // New market
+            originalMarkets[id] !== isActive // Status changed
+          );
+        })
+        .map(([marketId, isActive]) => ({
+          id: parseInt(marketId, 10),
+          status: 1 // Always 1 for active markets we want to assign
+        }));
       
-      await agentService.updateAgentMarkets(id as string, marketList);
+      console.log('Original markets:', originalMarkets);
+      console.log('Selected markets:', selectedMarkets);
+      console.log('Market changes being sent to API:', marketList);
+      
+      // Only call API if there are changes
+      if (marketList.length > 0) {
+        await agentService.updateAgentMarkets(id as string, marketList);
+        Alert.alert('Success', 'Agent markets updated successfully');
+      } else {
+        Alert.alert('Info', 'No market changes to save');
+      }
       
       // Refresh agent details to get updated markets
       await fetchAgentDetails();
       setShowMarketModal(false);
-      Alert.alert('Success', 'Agent markets updated successfully');
     } catch (error) {
       console.error('Error updating agent markets:', error);
       Alert.alert('Error', 'Failed to update agent markets');
@@ -377,7 +447,10 @@ export default function AgentDetailsScreen() {
                 </Text>
                 <TouchableOpacity
                   style={[styles.actionButton, { borderColor: isDark ? '#374151' : '#d1d5db' }]}
-                  onPress={() => setShowMarketModal(true)}
+                  onPress={() => {
+                    setSelectedNewMarket(''); // Reset dropdown selection
+                    setShowMarketModal(true);
+                  }}
                   disabled={updatingMarkets}
                 >
                   <Text style={[styles.actionButtonText, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
@@ -735,43 +808,169 @@ export default function AgentDetailsScreen() {
           onRequestClose={() => setShowMarketModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-              <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
-                Manage Agent Markets
-              </Text>
-              
-              <ScrollView style={{ maxHeight: 300 }}>
-                {availableMarkets.map((market) => (
-                  <View key={market.id} style={[styles.marketItemCheckbox, { borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
-                    <Text style={[styles.marketItemText, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
-                      {market.market_name} ({market.currency_code})
-                    </Text>
-                    <Switch
-                      value={selectedMarkets[market.id] || false}
-                      onValueChange={() => handleMarketToggle(market.id)}
-                      trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                      thumbColor={selectedMarkets[market.id] ? '#fff' : '#f9fafb'}
-                    />
-                  </View>
-                ))}
-              </ScrollView>
+            <View style={[styles.marketModalContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <View style={styles.marketModalHeader}>
+                <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
+                  Market Assign
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowMarketModal(false);
+                    setSelectedNewMarket(''); // Reset selection
+                  }}
+                  style={[styles.closeButton, { backgroundColor: '#ef4444' }]}
+                >
+                  <Ionicons name="close" size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Add New Market Section */}
+              <View style={styles.addMarketSection}>
+                <Text style={[styles.sectionLabel, { color: isDark ? '#d1d5db' : '#374151' }]}>
+                  Select Market
+                </Text>
+                <View style={[styles.marketPickerContainer, { 
+                  backgroundColor: isDark ? '#374151' : '#f9fafb',
+                  borderColor: isDark ? '#4b5563' : '#d1d5db'
+                }]}>
+                  <Picker
+                    selectedValue={selectedNewMarket}
+                    onValueChange={(marketId: string) => {
+                      setSelectedNewMarket(marketId);
+                    }}
+                    style={[styles.marketPicker, { color: isDark ? '#f3f4f6' : '#1f2937' }]}
+                    dropdownIconColor={isDark ? '#9ca3af' : '#6b7280'}
+                    mode="dropdown"
+                    itemStyle={{ height: 30, fontSize: 12 }} // Smaller items to show more in view
+                  >
+                    <Picker.Item label="Select market" value="" />
+                    {availableMarkets
+                      .filter(market => !selectedMarkets[market.id]) // Show all available markets
+                      .map(market => (
+                        <Picker.Item 
+                          key={market.id} 
+                          label={`${market.market_name} (${market.currency_code})`} 
+                          value={market.id.toString()} 
+                        />
+                      ))}
+                  </Picker>
+                </View>
+                
+                <TouchableOpacity
+                  style={[styles.createMarketButton, { 
+                    backgroundColor: selectedNewMarket ? '#1e40af' : '#9ca3af',
+                    opacity: selectedNewMarket ? 1 : 0.6
+                  }]}
+                  onPress={handleCreateMarket}
+                  disabled={!selectedNewMarket || creatingMarket}
+                >
+                  <Text style={styles.createMarketButtonText}>
+                    {creatingMarket ? 'Creating...' : 'Create'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Assigned Markets List */}
+              <View style={styles.assignedMarketsSection}>
+                <Text style={[styles.sectionLabel, { color: isDark ? '#d1d5db' : '#374151' }]}>
+                  Assigned Market List
+                </Text>
+                
+                <ScrollView style={{ maxHeight: 200 }}>
+                  {Object.entries(selectedMarkets)
+                    .filter(([marketId, isSelected]) => isSelected !== undefined)
+                    .map(([marketId, isActive]) => {
+                      const market = availableMarkets.find(m => m.id === parseInt(marketId));
+                      if (!market) return null;
+                      
+                      return (
+                        <View key={marketId} style={[styles.assignedMarketItem, { 
+                          borderColor: isDark ? '#374151' : '#e5e7eb',
+                          backgroundColor: isDark ? '#111827' : '#f8fafc',
+                          padding: 12, // Reduced from 16 to 12
+                          marginBottom: 8 // Reduced from 12 to 8
+                        }]}>
+                          <View style={styles.assignedMarketInfo}>
+                            <Text style={[styles.assignedMarketName, { 
+                              color: isDark ? '#f3f4f6' : '#1f2937',
+                              fontSize: 14, // Reduced from 16 to 14
+                              marginBottom: 6 // Reduced from 8 to 6
+                            }]}>
+                              {market.market_name} ({market.currency_code})
+                            </Text>
+                            <View style={styles.marketStatusContainer}>
+                              <TouchableOpacity 
+                                style={[styles.statusRadio, { 
+                                  backgroundColor: isActive ? '#3b82f6' : 'transparent',
+                                  borderColor: isActive ? '#3b82f6' : '#9ca3af'
+                                }]}
+                                onPress={() => handleMarketToggle(parseInt(marketId))}
+                              >
+                                {isActive && <View style={styles.statusRadioDot} />}
+                              </TouchableOpacity>
+                              <Text style={[styles.marketStatusLabel, { 
+                                color: isActive ? '#3b82f6' : '#6b7280',
+                                fontWeight: isActive ? '600' : '400'
+                              }]}>
+                                Active
+                              </Text>
+                              
+                              <TouchableOpacity
+                                style={[styles.statusRadio, { 
+                                  backgroundColor: !isActive ? '#6b7280' : 'transparent',
+                                  borderColor: !isActive ? '#6b7280' : '#9ca3af',
+                                  marginLeft: 20
+                                }]}
+                                onPress={() => handleMarketToggle(parseInt(marketId))}
+                              >
+                                {!isActive && <View style={styles.statusRadioDot} />}
+                              </TouchableOpacity>
+                              <Text style={[styles.marketStatusLabel, { 
+                                color: !isActive ? '#6b7280' : '#9ca3af',
+                                fontWeight: !isActive ? '600' : '400'
+                              }]}>
+                                Inactive
+                              </Text>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.marketActions}>
+                            <TouchableOpacity
+                              onPress={() => handleMarketToggle(parseInt(marketId))}
+                              style={[styles.toggleStatusButton, { backgroundColor: isActive ? '#6b7280' : '#3b82f6' }]}
+                            >
+                              <Text style={styles.toggleStatusText}>
+                                {isActive ? 'Deactivate' : 'Activate'}
+                              </Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity
+                              onPress={() => {
+                                setSelectedMarkets(prev => {
+                                  const updated = { ...prev };
+                                  delete updated[parseInt(marketId)];
+                                  return updated;
+                                });
+                              }}
+                              style={[styles.removeMarketButton, { backgroundColor: '#ef4444' }]}
+                            >
+                              <Ionicons name="trash-outline" size={16} color="#fff" />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      );
+                    })}
+                </ScrollView>
+              </View>
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => setShowMarketModal(false)}
-                  disabled={updatingMarkets}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={styles.confirmButton}
+                  style={[styles.updateMarketsButton, { backgroundColor: '#1e40af' }]}
                   onPress={handleMarketUpdate}
                   disabled={updatingMarkets}
                 >
-                  <Text style={styles.confirmButtonText}>
-                    {updatingMarkets ? 'Updating...' : 'Update Markets'}
+                  <Text style={styles.updateMarketsButtonText}>
+                    {updatingMarkets ? 'Updating...' : 'Change'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1336,6 +1535,136 @@ const styles = StyleSheet.create({
   verificationButtonText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  // Market Modal Styles
+  marketModalContainer: {
+    width: '95%',
+    maxWidth: 500,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    maxHeight: '90%',
+  },
+  marketModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addMarketSection: {
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  marketPickerContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: '#f9fafb',
+  },
+  marketPicker: {
+    height: 35,
+  },
+  createMarketButton: {
+    backgroundColor: '#1e40af',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  createMarketButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  assignedMarketsSection: {
+    marginBottom: 20,
+  },
+  assignedMarketItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  assignedMarketInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  assignedMarketName: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  marketStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusRadio: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusRadioDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#fff',
+  },
+  marketStatusLabel: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  marketActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  toggleStatusButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  toggleStatusText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  removeMarketButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  updateMarketsButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  updateMarketsButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
