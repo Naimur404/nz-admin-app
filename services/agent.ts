@@ -1,4 +1,4 @@
-import { AgentFilters, AgentListResponse, PartnerListResponse, AgentDetailsResponse } from '../types/agent';
+import { AgentDetailsResponse, AgentFilters, AgentListResponse, PartnerListResponse } from '../types/agent';
 import { apiClient } from './api';
 
 class AgentService {

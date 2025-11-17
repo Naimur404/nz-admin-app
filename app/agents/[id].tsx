@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useTheme } from '@/hooks/use-theme';
 import { agentService } from '@/services/agent';
 import { AgentDetails, AgentDocument } from '@/types/agent';
@@ -6,15 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Linking,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Linking,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
