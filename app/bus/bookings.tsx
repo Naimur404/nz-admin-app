@@ -312,6 +312,7 @@ export default function BusBookingsScreen() {
     headerTitle: {
       fontSize: 24,
       fontWeight: 'bold',
+      color: '#fff',
     },
     headerButton: {
       width: 24,
@@ -325,6 +326,7 @@ export default function BusBookingsScreen() {
     filterToggleText: {
       fontSize: 14,
       fontWeight: '600',
+      color: '#fff',
     },
     filterContainer: {
       padding: 16,
