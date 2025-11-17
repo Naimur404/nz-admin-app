@@ -10,7 +10,9 @@ import {
     ActivityIndicator,
     Alert,
     FlatList,
+    Image,
     Linking,
+    Modal,
     Pressable,
     RefreshControl,
     ScrollView,
@@ -62,14 +64,22 @@ export default function AgentDepositsScreen() {
     count: 0
   });
 
+  // Modal state for attachment viewing
+  const [showAttachmentModal, setShowAttachmentModal] = useState(false);
+  const [currentAttachment, setCurrentAttachment] = useState<{
+    url: string;
+    type: 'image' | 'pdf';
+  } | null>(null);
+
   // Filter states - Fixed for Agent (agent_type: 2)
   const [filters, setFilters] = useState<DepositFilters>(() => {
+    // Start with today's date like bus bookings for initial load
     const today = new Date();
     const localDate = today.toISOString().split('T')[0];
     
     return {
-      from_date: localDate,
-      to_date: localDate,
+      from_date: localDate, // Default to today's date for initial load
+      to_date: localDate,   // Default to today's date for initial load
       agent_id: '',
       status: '',
       market_id: '',
@@ -84,13 +94,15 @@ export default function AgentDepositsScreen() {
     loadMarkets();
   }, []);
 
-  const loadDeposits = async () => {
+  const loadDeposits = async (customFilters?: any) => {
     if (loading) return;
     
     setLoading(true);
     try {
+      // Use custom filters if provided, otherwise use current filters
+      const currentFilters = customFilters || filters;
       const params = {
-        ...filters,
+        ...currentFilters,
         page: pagination.currentPage,
         per_page: pagination.perPage
       };
@@ -149,12 +161,10 @@ export default function AgentDepositsScreen() {
   };
 
   const handleReset = () => {
-    const today = new Date();
-    const localDate = today.toISOString().split('T')[0];
-    
+    console.log('🔄 Reset clicked');
     const resetFilters = {
-      from_date: localDate,
-      to_date: localDate,
+      from_date: '', // Clear dates so user can select any date range
+      to_date: '',   // Clear dates so user can select any date range
       agent_id: '',
       status: '',
       market_id: '',
@@ -162,17 +172,25 @@ export default function AgentDepositsScreen() {
       agent_type: 2 // Always 2 for Agent
     };
     
+    console.log('Reset filters:', resetFilters);
     setFilters(resetFilters);
+    setDeposits([]); // Clear existing deposits
     
     // Reset pagination
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 15,
+    });
     
     // Close any open date pickers
     setShowFromDatePicker(false);
     setShowToDatePicker(false);
     
+    // Automatically search with empty filters
     setTimeout(() => {
-      loadDeposits();
+      loadDeposits(resetFilters);
     }, 100);
   };
 
@@ -229,17 +247,32 @@ export default function AgentDepositsScreen() {
     });
   }
 
+  const getAttachmentType = (url: string): 'image' | 'pdf' => {
+    const lowercaseUrl = url.toLowerCase();
+    if (lowercaseUrl.includes('.jpg') || lowercaseUrl.includes('.jpeg') || 
+        lowercaseUrl.includes('.png') || lowercaseUrl.includes('.gif') || 
+        lowercaseUrl.includes('.bmp') || lowercaseUrl.includes('.webp')) {
+      return 'image';
+    }
+    return 'pdf'; // Default to PDF for other file types
+  };
+
   const handleViewAttachment = async (attachmentUrl: string) => {
     try {
-      const supported = await Linking.canOpenURL(attachmentUrl);
-      if (supported) {
-        await Linking.openURL(attachmentUrl);
-      } else {
-        Alert.alert('Error', 'Cannot open this attachment');
-      }
+      const attachmentType = getAttachmentType(attachmentUrl);
+      setCurrentAttachment({
+        url: attachmentUrl,
+        type: attachmentType
+      });
+      setShowAttachmentModal(true);
     } catch (error) {
       Alert.alert('Error', 'Failed to open attachment');
     }
+  };
+
+  const closeAttachmentModal = () => {
+    setShowAttachmentModal(false);
+    setCurrentAttachment(null);
   };
 
   return (
@@ -283,8 +316,8 @@ export default function AgentDepositsScreen() {
                   }]}
                   onPress={() => setShowFromDatePicker(true)}
                 >
-                  <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#111827' }]}>
-                    {filters.from_date}
+                  <Text style={[styles.dateText, { color: filters.from_date ? (isDark ? '#f3f4f6' : '#111827') : (isDark ? '#9ca3af' : '#6b7280') }]}>
+                    {filters.from_date || 'Select From Date'}
                   </Text>
                   <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
                 </Pressable>
@@ -299,8 +332,8 @@ export default function AgentDepositsScreen() {
                   }]}
                   onPress={() => setShowToDatePicker(true)}
                 >
-                  <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#111827' }]}>
-                    {filters.to_date}
+                  <Text style={[styles.dateText, { color: filters.to_date ? (isDark ? '#f3f4f6' : '#111827') : (isDark ? '#9ca3af' : '#6b7280') }]}>
+                    {filters.to_date || 'Select To Date'}
                   </Text>
                   <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
                 </Pressable>
@@ -491,6 +524,67 @@ export default function AgentDepositsScreen() {
           onChange={(event, date) => handleDateChange(event, date, 'to')}
         />
       )}
+
+      {/* Attachment Modal */}
+      <Modal
+        visible={showAttachmentModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeAttachmentModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>
+                Attachment Preview
+              </Text>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={closeAttachmentModal}
+              >
+                <Ionicons name="close" size={24} color={isDark ? '#f3f4f6' : '#111827'} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              {currentAttachment?.type === 'image' ? (
+                <ScrollView
+                  maximumZoomScale={3.0}
+                  minimumZoomScale={1.0}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                >
+                  <Image
+                    source={{ uri: currentAttachment.url }}
+                    style={styles.attachmentImage}
+                    resizeMode="contain"
+                  />
+                </ScrollView>
+              ) : (
+                <View style={styles.pdfContainer}>
+                  <Ionicons name="document-text" size={64} color={isDark ? '#9ca3af' : '#6b7280'} />
+                  <Text style={[styles.pdfText, { color: isDark ? '#f3f4f6' : '#111827' }]}>
+                    PDF Document
+                  </Text>
+                  <Text style={[styles.pdfSubtext, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                    Tap "Open Externally" to view in a PDF reader
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.openExternallyButton, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}
+                    onPress={() => {
+                      if (currentAttachment?.url) {
+                        Linking.openURL(currentAttachment.url);
+                      }
+                    }}
+                  >
+                    <Text style={styles.openExternallyButtonText}>Open Externally</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 
@@ -864,6 +958,76 @@ const styles = StyleSheet.create({
   viewButtonText: {
     color: '#fff',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    height: '80%',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  modalBody: {
+    flex: 1,
+    padding: 16,
+  },
+  attachmentImage: {
+    width: '100%',
+    height: 400,
+    borderRadius: 8,
+  },
+  pdfContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pdfText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  pdfSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  openExternallyButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  openExternallyButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
