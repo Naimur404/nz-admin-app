@@ -1,4 +1,4 @@
-import { AgentFilters, AgentListResponse, PartnerListResponse } from '../types/agent';
+import { AgentFilters, AgentListResponse, PartnerListResponse, AgentDetailsResponse } from '../types/agent';
 import { apiClient } from './api';
 
 class AgentService {
@@ -23,6 +23,22 @@ class AgentService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching agents:', error);
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  }
+
+  async getAgentDetails(agentId: string): Promise<AgentDetailsResponse> {
+    try {
+      console.log('Fetching agent details for ID:', agentId);
+      const response = await apiClient.get(`/admin/agents/${agentId}`);
+      console.log('Agent details response received:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching agent details:', error);
       if (error.response) {
         console.error('Error response status:', error.response.status);
         console.error('Error response data:', error.response.data);
