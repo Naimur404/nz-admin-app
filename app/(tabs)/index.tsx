@@ -476,10 +476,13 @@ export default function HomeScreen() {
               <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Manage hotel bookings</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-              <Ionicons name="bar-chart" size={32} color="#ef4444" />
-              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Reports</Text>
-              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>View analytics</Text>
+            <TouchableOpacity 
+              style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
+              onPress={() => router.push('/agents' as any)}
+            >
+              <Ionicons name="people" size={32} color="#06b6d4" />
+              <Text style={[styles.actionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Agents</Text>
+              <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Manage agents</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
