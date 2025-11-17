@@ -1,26 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-  RefreshControl,
-  StatusBar,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/use-theme';
 import { agentService } from '../../services/agent';
 import { marketService } from '../../services/market';
 import { AgentFilters, AgentItem } from '../../types/agent';
 import { OptionItem } from '../../types/common';
-import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
 
 export default function AgentListScreen() {
   const router = useRouter();

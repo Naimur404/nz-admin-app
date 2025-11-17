@@ -1,5 +1,5 @@
+import { AgentFilters, AgentListResponse, PartnerListResponse } from '../types/agent';
 import { apiClient } from './api';
-import { AgentFilters, AgentItem, AgentListResponse, Partner, PartnerListResponse } from '../types/agent';
 
 class AgentService {
   async getAgents(filters: AgentFilters): Promise<AgentListResponse> {

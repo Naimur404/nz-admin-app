@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { LoginPayload, LoginResponse } from '../types/auth';
 import { apiClient } from './api';
-import { setLoggingOut, getLoggingOut, clearTokens } from './auth-interceptors';
+import { clearTokens, getLoggingOut, setLoggingOut } from './auth-interceptors';
 
 export const authService = {
   async login(payload: LoginPayload): Promise<LoginResponse> {
