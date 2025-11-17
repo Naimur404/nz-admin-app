@@ -1,8 +1,7 @@
+import { useThemeColors } from '@/hooks/use-theme-colors';
 import { bookingStatusService } from '@/services/booking-status';
 import { busService } from '@/services/bus';
 import { BookingStatusMap, BusBooking, BusBookingFilters } from '@/types/bus';
-import { getTodayLocalDate } from '@/utils/date';
-import { useThemeColors } from '@/hooks/use-theme-colors';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
