@@ -30,36 +30,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleDebugAPI = async () => {
-    try {
-      Alert.alert('Debug API', 'Debug API call initiated. Check console for details.');
-      
-      // Make a debug API call
-      const debugData = {
-        timestamp: new Date().toISOString(),
-        userAgent: 'NZ Admin App',
-        version: '1.0.0',
-        platform: 'React Native',
-        theme: theme,
-      };
-      
-      console.log('=== DEBUG API CALL ===');
-      console.log('Debug Data:', JSON.stringify(debugData, null, 2));
-      console.log('Current Theme:', theme);
-      console.log('Is Dark Mode:', isDarkMode);
-      console.log('========================');
-      
-      // Simulate API response
-      setTimeout(() => {
-        Alert.alert('Debug Complete', 'Debug information logged to console successfully!');
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Debug API Error:', error);
-      Alert.alert('Error', 'Debug API call failed');
-    }
-  };
-
   const isDark = theme === 'dark';
 
   return (
@@ -206,36 +176,6 @@ export default function SettingsScreen() {
                 name="chevron-forward" 
                 size={20} 
                 color={isDark ? '#9ca3af' : '#666'} 
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Debug Section */}
-          <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <View style={styles.sectionHeader}>
-              <Ionicons 
-                name="bug-outline" 
-                size={24} 
-                color={isDark ? '#60a5fa' : '#1e40af'} 
-              />
-              <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>
-                Debug
-              </Text>
-            </View>
-
-            <TouchableOpacity style={styles.settingItem} onPress={handleDebugAPI}>
-              <View style={styles.settingInfo}>
-                <Text style={[styles.settingTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>
-                  Debug API
-                </Text>
-                <Text style={[styles.settingDescription, { color: isDark ? '#9ca3af' : '#666' }]}>
-                  Test API calls and log debug information
-                </Text>
-              </View>
-              <Ionicons 
-                name="play-outline" 
-                size={20} 
-                color={isDark ? '#60a5fa' : '#1e40af'} 
               />
             </TouchableOpacity>
           </View>
