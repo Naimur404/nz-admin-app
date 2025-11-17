@@ -1,4 +1,4 @@
-import { useThemeColors } from '@/hooks/use-theme-colors';
+import { useTheme } from '@/hooks/use-theme';
 import { bookingStatusService } from '@/services/booking-status';
 import { busService } from '@/services/bus';
 import { BookingStatusMap, BusBooking, BusBookingFilters } from '@/types/bus';
@@ -23,7 +23,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BusBookingsScreen() {
   const router = useRouter();
-  const colors = useThemeColors();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [bookings, setBookings] = useState<BusBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -57,6 +58,7 @@ export default function BusBookingsScreen() {
   });
 
   useEffect(() => {
+    console.log('🚀 Component mounted - loading initial data');
     loadBookingStatuses();
     // Load bookings with initial filters (today's date)
     loadBookings();
@@ -77,15 +79,19 @@ export default function BusBookingsScreen() {
     }
   };
 
-  const loadBookings = async (isLoadMore = false) => {
+  const loadBookings = async (isLoadMore = false, customFilters?: BusBookingFilters) => {
     if (isLoadMore) {
       setIsLoadingMore(true);
     } else {
       setLoading(true);
     }
     
+    const filtersToUse = customFilters || filters;
+    
     try {
-      const response = await busService.getBookings(filters);
+      console.log('🚌 Bus booking request - isLoadMore:', isLoadMore, 'customFilters:', !!customFilters);
+      console.log('Final bus booking request filters:', filtersToUse);
+      const response = await busService.getBookings(filtersToUse);
       
       if (isLoadMore) {
         // Append new data to existing bookings, avoiding duplicates
@@ -114,8 +120,10 @@ export default function BusBookingsScreen() {
   };
 
   const handleSearch = () => {
-    setFilters({ ...filters, page: 1 });
-    loadBookings();
+    console.log('🔍 Search clicked');
+    const searchFilters = { ...filters, page: 1 };
+    setFilters(searchFilters);
+    loadBookings(false, searchFilters);
   };
 
   const handleLoadMore = () => {
@@ -127,6 +135,7 @@ export default function BusBookingsScreen() {
   };
 
   const handleReset = () => {
+    console.log('🔄 Reset clicked');
     const resetFilters = {
       from_date: '', // Clear dates so user can select any date range
       to_date: '',   // Clear dates so user can select any date range
@@ -137,9 +146,20 @@ export default function BusBookingsScreen() {
       page: 1,
       per_page: 15,
     };
+    console.log('Reset filters:', resetFilters);
     setFilters(resetFilters);
     setBookings([]); // Clear existing bookings
-    // Don't auto-search after reset, wait for user to click search
+    // Reset pagination as well
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 15,
+    });
+    // Automatically search with empty filters to show all data
+    setTimeout(() => {
+      loadBookings(false, resetFilters);
+    }, 100);
   };
 
   const onFromDateChange = (event: any, selectedDate?: Date) => {
@@ -176,63 +196,69 @@ export default function BusBookingsScreen() {
 
   const renderBookingItem = ({ item }: { item: BusBooking }) => (
     <TouchableOpacity
-      style={styles.bookingCard}
+      style={[styles.bookingCard, { 
+        backgroundColor: isDark ? '#1f2937' : '#fff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        shadowColor: isDark ? '#000' : '#000'
+      }]}
       onPress={() => router.push(`/bus/booking-details?id=${item.unique_trans_id}` as any)}
       activeOpacity={0.7}
     >
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.created_at)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Date:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(item.created_at)}</Text>
       </View>
       
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Id:</Text>
-        <View style={styles.bookingIdBadge}>
-          <Text style={styles.bookingIdText}>{item.unique_trans_id}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Id:</Text>
+        <View style={[styles.bookingIdBadge, { 
+          backgroundColor: isDark ? '#3b82f6' : '#1e40af'
+        }]}>
+          <Text style={[styles.bookingIdText, { color: '#fff' }]}>{item.unique_trans_id}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Agent:</Text>
-        <Text style={styles.value}>{item.agent_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Agent:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.agent_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Ref No:</Text>
-        <Text style={styles.value}>{item.booking_ref_number}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Ref No:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.booking_ref_number}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Brand:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Brand:</Text>
         <View style={[styles.brandBadge, getBrandColor(item.api_name)]}>
           <Text style={styles.brandText}>{item.api_name}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Ticket Number:</Text>
-        <Text style={styles.value}>{item.ticket_numbers}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Ticket Number:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.ticket_numbers}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Cost:</Text>
-        <Text style={styles.value}>{item.currency} {item.costing}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Cost:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency} {item.costing}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Payment:</Text>
-        <Text style={styles.value}>{item.currency} {item.total_price_selling}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Payment:</Text>
+        <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{item.currency} {item.total_price_selling}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Profit:</Text>
-        <Text style={[styles.value, styles.profit]}>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Profit:</Text>
+        <Text style={[styles.value, styles.profit, { color: isDark ? '#10b981' : '#059669' }]}>
           {item.currency} {calculateProfit(item.total_price_selling, item.costing)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Status:</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
           <Text style={styles.statusText}>{item.status}</Text>
         </View>
@@ -269,13 +295,10 @@ export default function BusBookingsScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     safeArea: {
-      backgroundColor: colors.headerBackground,
     },
     header: {
-      backgroundColor: colors.headerBackground,
       padding: 16,
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -284,7 +307,6 @@ export default function BusBookingsScreen() {
     headerTitle: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: colors.headerText,
     },
     headerButton: {
       width: 24,
@@ -296,15 +318,12 @@ export default function BusBookingsScreen() {
       gap: 6,
     },
     filterToggleText: {
-      color: colors.headerText,
       fontSize: 14,
       fontWeight: '600',
     },
     filterContainer: {
-      backgroundColor: colors.filterBackground,
       padding: 16,
       borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     filterRow: {
       flexDirection: 'row',
@@ -317,44 +336,34 @@ export default function BusBookingsScreen() {
     filterLabel: {
       fontSize: 12,
       fontWeight: '600',
-      color: colors.text,
       marginBottom: 6,
     },
     input: {
-      backgroundColor: colors.inputBackground,
       borderRadius: 6,
       padding: 10,
       fontSize: 14,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
-      color: colors.inputText,
     },
     dateInput: {
-      backgroundColor: colors.inputBackground,
       borderRadius: 6,
       padding: 10,
       fontSize: 14,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
     dateText: {
       fontSize: 14,
-      color: colors.inputText,
     },
     pickerContainer: {
-      backgroundColor: colors.inputBackground,
       borderRadius: 6,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
       overflow: 'hidden',
       minHeight: 50,
     },
     picker: {
       height: 50,
-      color: colors.inputText,
     },
     buttonRow: {
       flexDirection: 'row',
@@ -363,48 +372,39 @@ export default function BusBookingsScreen() {
     },
     searchButton: {
       flex: 1,
-      backgroundColor: colors.buttonPrimary,
       padding: 12,
       borderRadius: 6,
       alignItems: 'center',
     },
     resetButton: {
       flex: 1,
-      backgroundColor: colors.buttonSecondary,
       padding: 12,
       borderRadius: 6,
       alignItems: 'center',
+      borderWidth: 1,
     },
     buttonText: {
-      color: colors.buttonText,
       fontSize: 14,
       fontWeight: '600',
     },
     paginationInfo: {
-      backgroundColor: colors.card,
       padding: 12,
       alignItems: 'center',
       borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     paginationText: {
       fontSize: 14,
-      color: colors.text,
     },
     listContainer: {
-      flex: 1,
-      backgroundColor: colors.background,
       paddingVertical: 4,
+      flexGrow: 1,
     },
     bookingCard: {
-      backgroundColor: colors.card,
       margin: 8,
       marginBottom: 8,
       borderRadius: 8,
       padding: 16,
       borderWidth: 1,
-      borderColor: colors.border,
-      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -418,20 +418,18 @@ export default function BusBookingsScreen() {
     },
     label: {
       fontSize: 12,
-      color: colors.text,
       opacity: 0.7,
       fontWeight: '500',
     },
     value: {
       fontSize: 14,
-      color: colors.text,
       fontWeight: '600',
       textAlign: 'right',
       flex: 1,
     },
     pnrValue: {
       fontSize: 14,
-      color: colors.buttonPrimary,
+      color: '#1e40af',
       fontWeight: '600',
       textAlign: 'right',
       flex: 1,
@@ -443,24 +441,21 @@ export default function BusBookingsScreen() {
       color: '#10b981',
     },
     bookingIdBadge: {
-      backgroundColor: colors.buttonPrimary,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: 4,
     },
     bookingIdText: {
-      color: colors.buttonText,
       fontSize: 10,
       fontWeight: '600',
     },
     brandBadge: {
-      backgroundColor: colors.buttonSecondary,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: 4,
     },
     brandText: {
-      color: colors.buttonText,
+      color: '#fff',
       fontSize: 10,
       fontWeight: '600',
     },
@@ -485,7 +480,6 @@ export default function BusBookingsScreen() {
     },
     loadingText: {
       marginTop: 8,
-      color: colors.text,
       fontSize: 14,
     },
     emptyContainer: {
@@ -496,16 +490,18 @@ export default function BusBookingsScreen() {
     },
     emptyText: {
       fontSize: 16,
-      color: colors.text,
       textAlign: 'center',
       marginTop: 16,
+    },
+    flatList: {
+      flex: 1,
     },
   });
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -527,19 +523,22 @@ export default function BusBookingsScreen() {
       </SafeAreaView>
 
       {showFilters && (
-        <View style={styles.filterContainer}>
+        <View style={[styles.filterContainer, { backgroundColor: isDark ? '#1f2937' : '#f8f9fa', borderBottomColor: isDark ? '#374151' : '#e5e7eb' }]}>
           <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
             <View style={styles.filterRow}>
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>From Date</Text>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>From Date</Text>
                 <TouchableOpacity
-                  style={styles.dateInput}
+                  style={[styles.dateInput, { 
+                    backgroundColor: isDark ? '#374151' : '#fff', 
+                    borderColor: isDark ? '#4b5563' : '#d1d5db' 
+                  }]}
                   onPress={() => setShowFromDatePicker(true)}
                 >
-                  <Text style={styles.dateText}>
+                  <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#374151' }]}>
                     {filters.from_date || 'Select date'}
                   </Text>
-                  <Ionicons name="calendar-outline" size={20} color="#666" />
+                  <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
                 </TouchableOpacity>
                 {showFromDatePicker && (
                   <DateTimePicker
@@ -552,15 +551,18 @@ export default function BusBookingsScreen() {
               </View>
 
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>To Date</Text>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>To Date</Text>
                 <TouchableOpacity
-                  style={styles.dateInput}
+                  style={[styles.dateInput, { 
+                    backgroundColor: isDark ? '#374151' : '#fff', 
+                    borderColor: isDark ? '#4b5563' : '#d1d5db' 
+                  }]}
                   onPress={() => setShowToDatePicker(true)}
                 >
-                  <Text style={styles.dateText}>
+                  <Text style={[styles.dateText, { color: isDark ? '#f3f4f6' : '#374151' }]}>
                     {filters.to_date || 'Select date'}
                   </Text>
-                  <Ionicons name="calendar-outline" size={20} color="#666" />
+                  <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
                 </TouchableOpacity>
                 {showToDatePicker && (
                   <DateTimePicker
@@ -575,46 +577,64 @@ export default function BusBookingsScreen() {
 
             <View style={styles.filterRow}>
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>Booking ID / PNR</Text>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Booking ID / PNR</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    backgroundColor: isDark ? '#374151' : '#fff', 
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? '#f3f4f6' : '#374151'
+                  }]}
                   value={filters.booking_id_or_pnr}
                   onChangeText={(text) => setFilters({ ...filters, booking_id_or_pnr: text })}
                   placeholder="Search..."
+                  placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
                 />
               </View>
 
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>Agent</Text>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Agent</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    backgroundColor: isDark ? '#374151' : '#fff', 
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? '#f3f4f6' : '#374151'
+                  }]}
                   value={filters.agent_sl_or_name}
                   onChangeText={(text) => setFilters({ ...filters, agent_sl_or_name: text })}
                   placeholder="Search..."
+                  placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
                 />
               </View>
             </View>
 
             <View style={styles.filterRow}>
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>Ticket Number</Text>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Ticket Number</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    backgroundColor: isDark ? '#374151' : '#fff', 
+                    borderColor: isDark ? '#4b5563' : '#d1d5db',
+                    color: isDark ? '#f3f4f6' : '#374151'
+                  }]}
                   value={filters.ticket_number}
                   onChangeText={(text) => setFilters({ ...filters, ticket_number: text })}
                   placeholder="Search..."
+                  placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
                 />
               </View>
 
               <View style={styles.filterItem}>
-                <Text style={styles.filterLabel}>Status</Text>
-                <View style={styles.pickerContainer}>
+                <Text style={[styles.filterLabel, { color: isDark ? '#f3f4f6' : '#374151' }]}>Status</Text>
+                <View style={[styles.pickerContainer, { 
+                  backgroundColor: isDark ? '#374151' : '#fff', 
+                  borderColor: isDark ? '#4b5563' : '#d1d5db'
+                }]}>
                   <Picker
                     selectedValue={filters.status || ''}
                     onValueChange={(value: string) => setFilters({ ...filters, status: value })}
-                    style={styles.picker}
+                    style={[styles.picker, { color: isDark ? '#f3f4f6' : '#374151' }]}
                     mode="dropdown"
-                    dropdownIconColor="#666"
+                    dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                   >
                     <Picker.Item label="All Statuses" value="" />
                     {Object.entries(statuses).map(([key, value]) => (
@@ -626,12 +646,18 @@ export default function BusBookingsScreen() {
             </View>
 
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                <Text style={styles.buttonText}>Search</Text>
+              <TouchableOpacity 
+                style={[styles.searchButton, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]} 
+                onPress={handleSearch}
+              >
+                <Text style={[styles.buttonText, { color: '#fff' }]}>Search</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-                <Text style={styles.buttonText}>Reset</Text>
+              <TouchableOpacity 
+                style={[styles.resetButton, { backgroundColor: isDark ? '#6b7280' : '#f3f4f6', borderColor: isDark ? '#4b5563' : '#d1d5db' }]} 
+                onPress={handleReset}
+              >
+                <Text style={[styles.buttonText, { color: isDark ? '#f3f4f6' : '#374151' }]}>Reset</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -640,7 +666,7 @@ export default function BusBookingsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
         </View>
       ) : (
         <>
@@ -648,19 +674,21 @@ export default function BusBookingsScreen() {
             data={bookings}
             renderItem={renderBookingItem}
             keyExtractor={(item, index) => `booking-${item.id}-${index}`}
+            style={styles.flatList}
             contentContainerStyle={styles.listContainer}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.1}
+            showsVerticalScrollIndicator={true}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No bookings found</Text>
+                <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>No bookings found</Text>
               </View>
             }
             ListFooterComponent={() => 
               isLoadingMore ? (
                 <View style={styles.loadingMore}>
-                  <ActivityIndicator size="small" color="#1e40af" />
-                  <Text style={styles.loadingText}>Loading more...</Text>
+                  <ActivityIndicator size="small" color={isDark ? '#3b82f6' : '#1e40af'} />
+                  <Text style={[styles.loadingText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Loading more...</Text>
                 </View>
               ) : null
             }

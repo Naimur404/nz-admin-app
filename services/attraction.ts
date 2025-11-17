@@ -15,12 +15,9 @@ interface GetAttractionBookingsParams {
 export const attractionService = {
   async getBookings(params: GetAttractionBookingsParams = {}): Promise<AttractionBookingsResponse> {
     try {
-      // Use today's date only as fallback if no dates provided
-      const today = logDateInfo('Attraction Bookings');
-      
       const requestParams = {
-        from_date: params.from_date || today, // Use user date or fallback to today
-        to_date: params.to_date || today,     // Use user date or fallback to today
+        from_date: params.from_date || '', // Send empty string if not provided
+        to_date: params.to_date || '',     // Send empty string if not provided
         booking_id_or_pnr: params.booking_id_or_pnr || '',
         agent_sl_or_name: params.agent_sl_or_name || '',
         status: params.status || '',

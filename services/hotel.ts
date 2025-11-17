@@ -7,12 +7,9 @@ export const hotelService = {
     try {
       console.log('Getting hotel bookings with filters:', filters);
       
-      // Use today's date only as fallback if no dates provided
-      const today = logDateInfo('Hotel Bookings');
-      
       const requestData = {
-        from_date: filters.from_date || today,  // Use user date or fallback to today
-        to_date: filters.to_date || today,      // Use user date or fallback to today
+        from_date: filters.from_date || '',  // Send empty string if not provided
+        to_date: filters.to_date || '',      // Send empty string if not provided
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
         api_id: filters.api_id || '',
         staff_id: filters.staff_id || '',

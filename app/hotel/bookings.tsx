@@ -122,7 +122,8 @@ export default function HotelBookingsScreen() {
     // Update filters and load bookings with reset filters
     setFilters(resetFilters);
     
-    // Don't auto-search after reset, wait for user to click search
+    // Automatically search with empty filters to show all data
+    loadBookingsWithFilters(resetFilters);
   };
 
   // Helper function to load bookings with specific filters

@@ -13,8 +13,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function BookingDetailsScreen() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const params = useLocalSearchParams();
   const router = useRouter();
   const [booking, setBooking] = useState<BusBookingDetails | null>(null);
@@ -67,8 +70,8 @@ export default function BookingDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1e40af" />
+      <View style={[styles.loadingContainer, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+        <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
       </View>
     );
   }
@@ -78,13 +81,13 @@ export default function BookingDetailsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Booking Details</Text>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>Booking Details</Text>
           <View style={styles.backButton} />
         </View>
       </SafeAreaView>
@@ -92,76 +95,76 @@ export default function BookingDetailsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Booking Info Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Booking Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Booking Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Booking ID:</Text>
-              <View style={styles.bookingIdBadge}>
-                <Text style={styles.bookingIdText}>{booking.unique_trans_id}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking ID:</Text>
+              <View style={[styles.bookingIdBadge, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}>
+                <Text style={[styles.bookingIdText, { color: '#fff' }]}>{booking.unique_trans_id}</Text>
               </View>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Booking Ref:</Text>
-              <Text style={styles.value}>{booking.booking_ref_number}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Ref:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.booking_ref_number}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>PNR:</Text>
-              <Text style={styles.valueSmall}>{booking.pnr}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>PNR:</Text>
+              <Text style={[styles.valueSmall, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.pnr}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Status:</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Status:</Text>
               <View style={[styles.statusBadge, getStatusColor(booking.status)]}>
                 <Text style={styles.statusText}>{booking.status}</Text>
               </View>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Ticket Status:</Text>
-              <Text style={styles.value}>{booking.ticket_status}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Ticket Status:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.ticket_status}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Booking Date:</Text>
-              <Text style={styles.value}>{formatDate(booking.created_at)}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking Date:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{formatDate(booking.created_at)}</Text>
             </View>
           </View>
         </View>
 
         {/* Journey Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Journey Details</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Journey Details</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Operator:</Text>
-              <Text style={styles.value}>{booking.operator_name}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Operator:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.operator_name}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Bus Type:</Text>
-              <Text style={styles.value}>{booking.bus_type}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Bus Type:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.bus_type}</Text>
             </View>
 
             <View style={styles.journeyRow}>
               <View style={styles.journeyPoint}>
                 <Ionicons name="location" size={20} color="#10b981" />
                 <View style={styles.journeyInfo}>
-                  <Text style={styles.journeyLabel}>Boarding Point</Text>
-                  <Text style={styles.journeyLocation}>{booking.boarding_point.location}</Text>
-                  <Text style={styles.journeyTime}>{formatDate(booking.boarding_point.time)}</Text>
+                  <Text style={[styles.journeyLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Boarding Point</Text>
+                  <Text style={[styles.journeyLocation, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.boarding_point.location}</Text>
+                  <Text style={[styles.journeyTime, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{formatDate(booking.boarding_point.time)}</Text>
                 </View>
               </View>
 
-              <Ionicons name="arrow-down" size={24} color="#6b7280" style={styles.arrowIcon} />
+              <Ionicons name="arrow-down" size={24} color={isDark ? '#9ca3af' : '#6b7280'} style={styles.arrowIcon} />
 
               <View style={styles.journeyPoint}>
                 <Ionicons name="location" size={20} color="#ef4444" />
                 <View style={styles.journeyInfo}>
-                  <Text style={styles.journeyLabel}>Dropping Point</Text>
-                  <Text style={styles.journeyLocation}>{booking.dropping_point.location}</Text>
-                  <Text style={styles.journeyTime}>{formatDate(booking.dropping_point.time)}</Text>
+                  <Text style={[styles.journeyLabel, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Dropping Point</Text>
+                  <Text style={[styles.journeyLocation, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.dropping_point.location}</Text>
+                  <Text style={[styles.journeyTime, { color: isDark ? '#9ca3af' : '#6b7280' }]}>{formatDate(booking.dropping_point.time)}</Text>
                 </View>
               </View>
             </View>
@@ -170,33 +173,33 @@ export default function BookingDetailsScreen() {
 
         {/* Passenger Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>
             Passengers ({booking.passenger_counts.total})
           </Text>
           {booking.passengers.map((passenger, index) => (
-            <View key={passenger.id} style={styles.card}>
+            <View key={passenger.id} style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
               <View style={styles.passengerHeader}>
-                <Text style={styles.passengerName}>
+                <Text style={[styles.passengerName, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                   {passenger.full_name}
                   {passenger.is_lead_passenger && (
-                    <Text style={styles.leadBadge}> (Lead)</Text>
+                    <Text style={[styles.leadBadge, { color: '#10b981' }]}> (Lead)</Text>
                   )}
                 </Text>
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.label}>Seat:</Text>
-                <Text style={styles.value}>{passenger.seat_number}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Seat:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{passenger.seat_number}</Text>
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.label}>Ticket No:</Text>
-                <Text style={styles.value}>{passenger.ticket_numbers}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Ticket No:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{passenger.ticket_numbers}</Text>
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.label}>Gender:</Text>
-                <Text style={styles.value}>{passenger.gender}</Text>
+                <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Gender:</Text>
+                <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{passenger.gender}</Text>
               </View>
             </View>
           ))}
@@ -204,74 +207,74 @@ export default function BookingDetailsScreen() {
 
         {/* Agent Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Agent Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Agent Information</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Agent Name:</Text>
-              <Text style={styles.value}>{booking.agent_info.agent_name}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Agent Name:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.agent_info.agent_name}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>SL No:</Text>
-              <Text style={styles.value}>{booking.agent_info.sl_no}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>SL No:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.agent_info.sl_no}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Contact:</Text>
-              <Text style={styles.value}>{booking.agent_info.contact_number}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Contact:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.agent_info.contact_number}</Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.valueSmall}>{booking.agent_info.email}</Text>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Email:</Text>
+              <Text style={[styles.valueSmall, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.agent_info.email}</Text>
             </View>
           </View>
         </View>
 
         {/* Price Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Price Breakdown</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Price Breakdown</Text>
+          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Base Price:</Text>
-              <Text style={styles.value}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Base Price:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                 {booking.currency} {booking.base_price}
               </Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Discount:</Text>
-              <Text style={[styles.value, styles.discount]}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Discount:</Text>
+              <Text style={[styles.value, styles.discount, { color: isDark ? '#10b981' : '#059669' }]}>
                 {booking.currency} {booking.discount_price}
               </Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Taxes:</Text>
-              <Text style={styles.value}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Taxes:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                 {booking.currency} {booking.taxes}
               </Text>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { borderBottomColor: isDark ? '#374151' : '#e5e7eb' }]} />
 
             <View style={styles.row}>
-              <Text style={styles.totalLabel}>Total Price:</Text>
-              <Text style={styles.totalValue}>
+              <Text style={[styles.totalLabel, { color: isDark ? '#f3f4f6' : '#111827' }]}>Total Price:</Text>
+              <Text style={[styles.totalValue, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                 {booking.currency} {booking.total_price}
               </Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Cost:</Text>
-              <Text style={styles.value}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Cost:</Text>
+              <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                 {booking.currency} {booking.costing}
               </Text>
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.label}>Profit:</Text>
-              <Text style={styles.profit}>
+              <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Profit:</Text>
+              <Text style={[styles.profit, { color: isDark ? '#10b981' : '#059669' }]}>
                 {booking.currency}{' '}
                 {(parseFloat(booking.total_price) - parseFloat(booking.costing)).toFixed(2)}
               </Text>
@@ -288,13 +291,10 @@ export default function BookingDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,7 +306,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
     flex: 1,
     textAlign: 'center',
   },
@@ -328,18 +327,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 12,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
     elevation: 2,
   },
   row: {
@@ -350,32 +347,27 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
     flex: 1,
   },
   value: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
   },
   valueSmall: {
     fontSize: 11,
-    color: '#333',
     fontWeight: '600',
     flex: 1.5,
     textAlign: 'right',
   },
   bookingIdBadge: {
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   bookingIdText: {
-    color: '#fff',
     fontSize: 11,
     fontWeight: 'bold',
   },
@@ -415,18 +407,15 @@ const styles = StyleSheet.create({
   },
   journeyLabel: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 4,
   },
   journeyLocation: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 2,
   },
   journeyTime: {
     fontSize: 13,
-    color: '#666',
   },
   arrowIcon: {
     alignSelf: 'center',

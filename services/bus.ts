@@ -5,20 +5,10 @@ import { apiClient } from './api';
 export const busService = {
   async getBookings(filters: BusBookingFilters): Promise<BusBookingResponse> {
     try {
-      // Use today's date only as fallback if no dates provided
-      const today = logDateInfo('Bus Bookings');
-      
-      // Use user-selected dates or fallback to today
-      const finalFilters = {
-        ...filters,
-        from_date: filters.from_date || today, // Use user date or fallback to today
-        to_date: filters.to_date || today,     // Use user date or fallback to today
-      };
-      
-      console.log('Final bus booking request filters:', finalFilters);
+      console.log('Final bus booking request filters:', filters);
       
       const response = await apiClient.get<BusBookingResponse>('/bus/bookings', {
-        params: finalFilters,
+        params: filters,
       });
       
       return response.data;
