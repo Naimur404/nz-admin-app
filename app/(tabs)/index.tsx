@@ -282,6 +282,9 @@ export default function HomeScreen() {
         } else if (route === '/ticket-support') {
           console.log('Navigating to ticket support');
           router.navigate('/ticket-support');
+        } else if (route === '/agents') {
+          console.log('Navigating to agents');
+          router.navigate('/agents');
         } else {
           // For not yet implemented routes
           console.log('Route not implemented yet:', route);
