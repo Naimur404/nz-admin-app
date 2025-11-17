@@ -35,6 +35,7 @@ export default function HomeScreen() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
   const hasInitialized = useRef(false);
 
   const isDark = theme === 'dark';
@@ -224,6 +225,24 @@ export default function HomeScreen() {
       icon: 'bar-chart-outline',
       route: '/reports',
       color: '#ef4444',
+      hasSubmenu: true,
+      submenuItems: [
+        {
+          title: 'Air Ticket Sales Report',
+          route: '/reports/air-ticket-sales',
+          icon: 'airplane-outline',
+        },
+        {
+          title: 'Agent Account Statement',
+          route: '/reports/agent-account-statement',
+          icon: 'person-outline',
+        },
+        {
+          title: 'Walking Sales Report',
+          route: '/reports/walking-sales',
+          icon: 'walk-outline',
+        },
+      ],
     },
     {
       title: 'Agents',
@@ -239,8 +258,15 @@ export default function HomeScreen() {
     },
   ];
 
-  const handleMenuPress = (route: string) => {
+  const handleMenuPress = (route: string, hasSubmenu?: boolean) => {
     console.log('Menu item clicked:', route);
+    
+    // If the menu item has a submenu, toggle expansion instead of navigating
+    if (hasSubmenu) {
+      setExpandedSubmenu(expandedSubmenu === route ? null : route);
+      return;
+    }
+    
     closeSidebar();
     
     // Use a timeout to ensure sidebar closes before navigation
@@ -265,6 +291,31 @@ export default function HomeScreen() {
           // For not yet implemented routes
           console.log('Route not implemented yet:', route);
           alert('This feature is coming soon!');
+        }
+      } catch (error) {
+        console.error('Navigation error:', error);
+        alert('Navigation failed. Please try again.');
+      }
+    }, 300);
+  };
+
+  const handleSubmenuPress = (route: string) => {
+    console.log('Submenu item clicked:', route);
+    closeSidebar();
+    
+    // Use a timeout to ensure sidebar closes before navigation
+    setTimeout(() => {
+      try {
+        if (route === '/reports/air-ticket-sales') {
+          console.log('Navigating to air ticket sales report');
+          router.navigate('/reports/air-ticket-sales');
+        } else if (route === '/reports/agent-account-statement') {
+          console.log('Navigating to account statement');
+          router.navigate('/reports/account-statement');
+        } else {
+          // For other not yet implemented routes
+          console.log('Report route not implemented yet:', route);
+          alert('This report feature is coming soon!');
         }
       } catch (error) {
         console.error('Navigation error:', error);
@@ -498,22 +549,48 @@ export default function HomeScreen() {
                 <View style={styles.menuSection}>
                   <Text style={[styles.menuSectionTitle, { color: isDark ? '#9ca3af' : '#666' }]}>MAIN MENU</Text>
                   {menuItems.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.menuItem}
-                      onPress={() => handleMenuPress(item.route)}
-                    >
-                      <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
-                        <Ionicons name={item.icon as any} size={20} color="#fff" />
-                      </View>
-                      <View style={styles.menuTextContainer}>
-                        <Text style={[styles.menuText, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.title}</Text>
-                        {item.route === '/ticket-support' && ticketDataCount && (
-                          <Text style={styles.menuBadge}>({ticketDataCount.ticket_in_process})</Text>
-                        )}
-                      </View>
-                      <Ionicons name="chevron-forward" size={20} color={isDark ? '#9ca3af' : '#666'} />
-                    </TouchableOpacity>
+                    <View key={index}>
+                      <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => handleMenuPress(item.route, item.hasSubmenu)}
+                      >
+                        <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
+                          <Ionicons name={item.icon as any} size={20} color="#fff" />
+                        </View>
+                        <View style={styles.menuTextContainer}>
+                          <Text style={[styles.menuText, { color: isDark ? '#f3f4f6' : '#333' }]}>{item.title}</Text>
+                          {item.route === '/ticket-support' && ticketDataCount && (
+                            <Text style={styles.menuBadge}>({ticketDataCount.ticket_in_process})</Text>
+                          )}
+                        </View>
+                        <Ionicons 
+                          name={item.hasSubmenu ? (expandedSubmenu === item.route ? "chevron-down" : "chevron-forward") : "chevron-forward"} 
+                          size={20} 
+                          color={isDark ? '#9ca3af' : '#666'} 
+                        />
+                      </TouchableOpacity>
+                      
+                      {/* Render submenu items if this menu is expanded */}
+                      {item.hasSubmenu && expandedSubmenu === item.route && item.submenuItems && (
+                        <View style={styles.submenuContainer}>
+                          {item.submenuItems.map((submenuItem, submenuIndex) => (
+                            <TouchableOpacity
+                              key={submenuIndex}
+                              style={styles.submenuItem}
+                              onPress={() => handleSubmenuPress(submenuItem.route)}
+                            >
+                              <View style={[styles.submenuIcon, { backgroundColor: item.color }]}>
+                                <Ionicons name={submenuItem.icon as any} size={16} color="#fff" />
+                              </View>
+                              <Text style={[styles.submenuText, { color: isDark ? '#d1d5db' : '#555' }]}>
+                                {submenuItem.title}
+                              </Text>
+                              <Ionicons name="chevron-forward" size={16} color={isDark ? '#9ca3af' : '#666'} />
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+                    </View>
                   ))}
                 </View>
 
@@ -793,6 +870,28 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   sidebarContent: {
+    flex: 1,
+  },
+  submenuContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    paddingLeft: 20,
+  },
+  submenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  submenuIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  submenuText: {
+    fontSize: 14,
     flex: 1,
   },
 });
