@@ -64,7 +64,7 @@ export default function RootLayout() {
 
   // Re-check auth when app comes to foreground or after login
   useEffect(() => {
-    const interval = setInterval(checkAuth, 5000); // Check every 5 seconds
+    const interval = setInterval(checkAuth, 30000); // Check every 30 seconds instead of 5
     return () => clearInterval(interval);
   }, []);
 
@@ -78,6 +78,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
           <Stack.Screen name="profile" options={{ headerShown: false, title: 'Profile' }} />
           <Stack.Screen name="bus/bookings" options={{ headerShown: false, title: 'Bus Bookings' }} />
@@ -91,7 +92,6 @@ export default function RootLayout() {
           <Stack.Screen name="flight/agent-bookings" options={{ headerShown: false, title: 'Agent Flight Bookings' }} />
           <Stack.Screen name="flight/booking-details" options={{ headerShown: false, title: 'Flight Booking Details' }} />
           <Stack.Screen name="ticket-support" options={{ headerShown: false, title: 'Air Ticket Support' }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         <StatusBar style="auto" />

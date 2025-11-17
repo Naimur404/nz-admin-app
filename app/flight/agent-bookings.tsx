@@ -37,25 +37,29 @@ export default function AgentFlightBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<FlightBookingFilters>(() => {
+    // Get today's date in local timezone
+    const today = new Date();
+    const localDate = today.toISOString().split('T')[0];
+    
     return {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: '', // Allow user to select any date
+      from_date: localDate, // Default to today's date
       market_id: null,
       page: 1,
       per_page: 10,
       staff: '',
       status: '',
       ticket_no: '',
-      to_date: '',   // Allow user to select any date
+      to_date: localDate,   // Default to today's date
     };
   });
 
   useEffect(() => {
     loadBookingStatuses();
-    loadBookings(); // Load all bookings initially
+    loadBookings(); // Load bookings with initial filters (today's date)
   }, []);
 
   const loadBookingStatuses = async () => {
@@ -164,10 +168,7 @@ export default function AgentFlightBookingsScreen() {
     // Update filters and load bookings with reset filters
     setFilters(resetFilters);
     
-    // Load bookings with the reset filters directly
-    setTimeout(() => {
-      loadBookingsWithFilters(resetFilters);
-    }, 100);
+    // Don't auto-search after reset, wait for user to click search
   };
 
   const formatDate = (dateString: string) => {
@@ -214,6 +215,7 @@ export default function AgentFlightBookingsScreen() {
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       setFilters({ ...filters, from_date: formattedDate });
+      // Don't auto-search, wait for user to click search button
     }
   };
 
@@ -222,6 +224,7 @@ export default function AgentFlightBookingsScreen() {
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       setFilters({ ...filters, to_date: formattedDate });
+      // Don't auto-search, wait for user to click search button
     }
   };
 

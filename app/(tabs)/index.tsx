@@ -41,8 +41,18 @@ export default function HomeScreen() {
     try {
       const response = await profileService.getUserProfile();
       setProfile(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading profile:', error);
+      
+      // Check if it's a 401 error (authentication failed)
+      if (error.response?.status === 401) {
+        console.log('Authentication failed, token may be expired');
+        // Don't try to reload profile immediately if auth failed
+        return;
+      }
+      
+      // For other errors, you might want to show a user-friendly message
+      // or attempt a retry logic here
     }
   };
 

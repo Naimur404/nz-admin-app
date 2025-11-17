@@ -45,13 +45,18 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access - token expired or invalid
       console.log('Unauthorized access - token expired or invalid');
+      console.log('Request URL:', error.config?.url);
       
-      // Clear stored tokens
-      await authService.logout();
-      
-      // Redirect to login if callback is set
-      if (authRedirectCallback) {
-        authRedirectCallback();
+      // Only clear tokens and redirect for specific endpoints that require auth
+      // Avoid infinite loops by not redirecting on login endpoint
+      if (!error.config?.url?.includes('/auth/login')) {
+        // Clear stored tokens
+        await authService.logout();
+        
+        // Redirect to login if callback is set
+        if (authRedirectCallback) {
+          authRedirectCallback();
+        }
       }
     }
     return Promise.reject(error);

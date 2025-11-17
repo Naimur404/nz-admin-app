@@ -40,9 +40,13 @@ export default function BusBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<BusBookingFilters>(() => {
+    // Get today's date in local timezone
+    const today = new Date();
+    const localDate = today.toISOString().split('T')[0];
+    
     return {
-      from_date: '', // Allow user to select any date
-      to_date: '',   // Allow user to select any date
+      from_date: localDate, // Default to today's date
+      to_date: localDate,   // Default to today's date
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       ticket_number: '',
@@ -54,10 +58,14 @@ export default function BusBookingsScreen() {
 
   useEffect(() => {
     loadBookingStatuses();
+    // Load bookings with initial filters (today's date)
+    loadBookings();
   }, []);
 
   useEffect(() => {
-    loadBookings();
+    if (filters.page > 1) {
+      loadBookings();
+    }
   }, [filters.page]);
 
   const loadBookingStatuses = async () => {
@@ -131,8 +139,7 @@ export default function BusBookingsScreen() {
     };
     setFilters(resetFilters);
     setBookings([]); // Clear existing bookings
-    // Trigger search with reset filters
-    setTimeout(() => loadBookings(), 100);
+    // Don't auto-search after reset, wait for user to click search
   };
 
   const onFromDateChange = (event: any, selectedDate?: Date) => {
@@ -140,6 +147,7 @@ export default function BusBookingsScreen() {
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       setFilters({ ...filters, from_date: formattedDate });
+      // Don't auto-search, wait for user to click search button
     }
   };
 
@@ -148,6 +156,7 @@ export default function BusBookingsScreen() {
     if (selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       setFilters({ ...filters, to_date: formattedDate });
+      // Don't auto-search, wait for user to click search button
     }
   };
 
@@ -279,6 +288,7 @@ export default function BusBookingsScreen() {
     },
     headerButton: {
       width: 24,
+      padding: 4,
     },
     filterToggle: {
       flexDirection: 'row',
@@ -340,9 +350,10 @@ export default function BusBookingsScreen() {
       borderWidth: 1,
       borderColor: colors.inputBorder,
       overflow: 'hidden',
+      minHeight: 50,
     },
     picker: {
-      height: 40,
+      height: 50,
       color: colors.inputText,
     },
     buttonRow: {
@@ -383,11 +394,12 @@ export default function BusBookingsScreen() {
     listContainer: {
       flex: 1,
       backgroundColor: colors.background,
+      paddingVertical: 4,
     },
     bookingCard: {
       backgroundColor: colors.card,
       margin: 8,
-      marginBottom: 0,
+      marginBottom: 8,
       borderRadius: 8,
       padding: 16,
       borderWidth: 1,
@@ -428,6 +440,7 @@ export default function BusBookingsScreen() {
     profit: {
       fontSize: 14,
       fontWeight: '600',
+      color: '#10b981',
     },
     bookingIdBadge: {
       backgroundColor: colors.buttonPrimary,
@@ -450,6 +463,21 @@ export default function BusBookingsScreen() {
       color: colors.buttonText,
       fontSize: 10,
       fontWeight: '600',
+    },
+    statusBadge: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    statusText: {
+      color: '#fff',
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     loadingMore: {
       padding: 20,
@@ -630,9 +658,9 @@ export default function BusBookingsScreen() {
             }
             ListFooterComponent={() => 
               isLoadingMore ? (
-                <View style={styles.loadMoreContainer}>
+                <View style={styles.loadingMore}>
                   <ActivityIndicator size="small" color="#1e40af" />
-                  <Text style={styles.loadMoreText}>Loading more...</Text>
+                  <Text style={styles.loadingText}>Loading more...</Text>
                 </View>
               ) : null
             }
@@ -642,236 +670,3 @@ export default function BusBookingsScreen() {
     </View>
   );
 }
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    safeArea: {
-      backgroundColor: colors.headerBackground,
-    },
-    header: {
-      backgroundColor: colors.headerBackground,
-      padding: 16,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    headerTitle: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: colors.headerText,
-    },
-    filterToggle: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    filterToggleText: {
-      color: colors.headerText,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    filterContainer: {
-      backgroundColor: colors.filterBackground,
-      padding: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    filterRow: {
-      flexDirection: 'row',
-      gap: 12,
-      marginBottom: 12,
-    },
-    filterItem: {
-      flex: 1,
-    },
-    filterLabel: {
-      fontSize: 12,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 6,
-    },
-    input: {
-      backgroundColor: colors.inputBackground,
-      borderRadius: 6,
-      padding: 10,
-      fontSize: 14,
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
-      color: colors.inputText,
-    },
-    dateInput: {
-      backgroundColor: colors.inputBackground,
-      borderRadius: 6,
-      padding: 10,
-      fontSize: 14,
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    dateText: {
-      fontSize: 14,
-      color: colors.inputText,
-    },
-  pickerContainer: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    overflow: 'hidden',
-    minHeight: 50,
-  },
-  picker: {
-    height: 50,
-    backgroundColor: 'transparent',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  searchButton: {
-    flex: 1,
-    backgroundColor: '#1e40af',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  resetButton: {
-    flex: 1,
-    backgroundColor: '#6b7280',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  paginationInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  paginationText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  listContainer: {
-    paddingVertical: 4,
-    paddingHorizontal: 0,
-  },
-  bookingCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 8,
-    marginHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '500',
-    flex: 1,
-  },
-  value: {
-    fontSize: 13,
-    color: '#333',
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
-  },
-  pnrValue: {
-    fontSize: 10,
-    color: '#333',
-    fontWeight: '600',
-    flex: 1.5,
-    textAlign: 'right',
-    lineHeight: 14,
-  },
-  profit: {
-    color: '#10b981',
-  },
-  bookingIdBadge: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  bookingIdText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  brandBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  brandText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
-  loadMoreContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    gap: 8,
-  },
-  loadMoreText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  headerButton: {
-    padding: 4,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-});
