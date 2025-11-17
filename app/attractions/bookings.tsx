@@ -19,6 +19,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTheme } from '../../hooks/use-theme';
+
 interface AttractionFilters {
   from_date: string;
   to_date: string;
@@ -31,6 +33,9 @@ interface AttractionFilters {
 
 export default function AttractionBookingsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   const [bookings, setBookings] = useState<AttractionBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -86,15 +91,17 @@ export default function AttractionBookingsScreen() {
     }
   };
 
-  const loadBookings = async (isLoadMore = false) => {
+  const loadBookings = async (isLoadMore = false, customFilters?: AttractionFilters) => {
     if (isLoadMore) {
       setIsLoadingMore(true);
     } else {
       setLoading(true);
     }
     
+    const filtersToUse = customFilters || filters;
+    
     try {
-      const response = await attractionService.getBookings(filters);
+      const response = await attractionService.getBookings(filtersToUse);
       
       if (isLoadMore) {
         // Append new data to existing bookings, avoiding duplicates
@@ -123,8 +130,10 @@ export default function AttractionBookingsScreen() {
   };
 
   const handleSearch = () => {
-    setFilters({ ...filters, page: 1 });
-    loadBookings(); // Reset to first page and load
+    console.log('🔍 Search clicked');
+    const searchFilters = { ...filters, page: 1 };
+    setFilters(searchFilters);
+    loadBookings(false, searchFilters);
   };
 
   const handleLoadMore = () => {
@@ -136,6 +145,7 @@ export default function AttractionBookingsScreen() {
   };
 
   const handleReset = () => {
+    console.log('🔄 Reset clicked');
     const resetFilters = {
       from_date: '', // Clear dates so user can select any date range
       to_date: '',   // Clear dates so user can select any date range
@@ -145,9 +155,20 @@ export default function AttractionBookingsScreen() {
       page: 1,
       per_page: 15,
     };
+    console.log('Reset filters:', resetFilters);
     setFilters(resetFilters);
     setBookings([]); // Clear existing bookings
-    // Don't auto-search after reset, wait for user to click search
+    // Reset pagination as well
+    setPagination({
+      total: 0,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 15,
+    });
+    // Automatically search with empty filters to show all data
+    setTimeout(() => {
+      loadBookings(false, resetFilters);
+    }, 100);
   };
 
   const formatDate = (dateString: string) => {
@@ -207,85 +228,85 @@ export default function AttractionBookingsScreen() {
 
   const renderBookingItem = ({ item }: { item: AttractionBooking }) => (
     <TouchableOpacity 
-      style={styles.bookingCard}
+      style={[styles.bookingCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
       onPress={() => router.push(`/attractions/booking-details?bookingTransId=${item.booking_trans_id}`)}
     >
       <View style={styles.row}>
-        <Text style={styles.label}>Booking ID:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Booking ID:</Text>
         <View style={styles.bookingIdBadge}>
           <Text style={styles.bookingIdText}>{item.booking_trans_id}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>PNR:</Text>
-        <Text style={styles.pnrValue}>{item.pnr}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>PNR:</Text>
+        <Text style={[styles.pnrValue, { color: isDark ? '#fff' : '#333' }]}>{item.pnr}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Product:</Text>
-        <Text style={styles.value}>{item.product_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Product:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{item.product_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Package:</Text>
-        <Text style={styles.value}>{item.package_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Package:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{item.package_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Category:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Category:</Text>
         <View style={[styles.brandBadge, { backgroundColor: getCategoryColor(item.category) }]}>
           <Text style={styles.brandText}>{item.category}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Status:</Text>
         <View style={[styles.brandBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Text style={styles.brandText}>{item.status}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Visit Date:</Text>
-        <Text style={styles.value}>{formatDate(item.visited_date)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Visit Date:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{formatDate(item.visited_date)}</Text>
       </View>
 
       {item.time_slot && (
         <View style={styles.row}>
-          <Text style={styles.label}>Time Slot:</Text>
-          <Text style={styles.value}>{item.time_slot}</Text>
+          <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Time Slot:</Text>
+          <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{item.time_slot}</Text>
         </View>
       )}
 
       <View style={styles.row}>
-        <Text style={styles.label}>Passengers:</Text>
-        <Text style={styles.value}>{item.total_passengers}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Passengers:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{item.total_passengers}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Agent:</Text>
-        <Text style={styles.value}>{item.agent_info.agent_name}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Agent:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{item.agent_info.agent_name}</Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Amount:</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Amount:</Text>
         <Text style={[styles.value, styles.profit]}>
           {item.currency} {parseFloat(item.total_price_selling).toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Booking Date:</Text>
-        <Text style={styles.value}>{formatDate(item.created_at)}</Text>
+        <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Booking Date:</Text>
+        <Text style={[styles.value, { color: isDark ? '#fff' : '#333' }]}>{formatDate(item.created_at)}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]} edges={['top']}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -305,18 +326,21 @@ export default function AttractionBookingsScreen() {
       </SafeAreaView>
 
       {showFilters && (
-        <View style={styles.filterContainer}>
+        <View style={[styles.filterContainer, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>From Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#d1d5db' : '#333' }]}>From Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#f9f9f9', 
+                  borderColor: isDark ? '#4b5563' : '#ddd' 
+                }]}
                 onPress={() => setShowFromDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#d1d5db' : '#333' }]}>
                   {filters.from_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showFromDatePicker && (
                 <DateTimePicker
@@ -329,15 +353,18 @@ export default function AttractionBookingsScreen() {
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>To Date</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#d1d5db' : '#333' }]}>To Date</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, { 
+                  backgroundColor: isDark ? '#374151' : '#f9f9f9', 
+                  borderColor: isDark ? '#4b5563' : '#ddd' 
+                }]}
                 onPress={() => setShowToDatePicker(true)}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.dateText, { color: isDark ? '#d1d5db' : '#333' }]}>
                   {filters.to_date || 'Select date'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Ionicons name="calendar-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
               </TouchableOpacity>
               {showToDatePicker && (
                 <DateTimePicker
@@ -352,38 +379,49 @@ export default function AttractionBookingsScreen() {
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Booking ID / PNR</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#d1d5db' : '#333' }]}>Booking ID / PNR</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f9f9f9', 
+                  borderColor: isDark ? '#4b5563' : '#ddd',
+                  color: isDark ? '#d1d5db' : '#333'
+                }]}
                 value={filters.booking_id_or_pnr}
                 onChangeText={(text) => setFilters({ ...filters, booking_id_or_pnr: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
 
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Agent SL / Name</Text>
+              <Text style={[styles.filterLabel, { color: isDark ? '#d1d5db' : '#333' }]}>Agent SL / Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDark ? '#374151' : '#f9f9f9', 
+                  borderColor: isDark ? '#4b5563' : '#ddd',
+                  color: isDark ? '#d1d5db' : '#333'
+                }]}
                 value={filters.agent_sl_or_name}
                 onChangeText={(text) => setFilters({ ...filters, agent_sl_or_name: text })}
                 placeholder="Search..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#9ca3af' : '#999'}
               />
             </View>
           </View>
 
           <View style={styles.filterRow}>
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Status</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={[styles.filterLabel, { color: isDark ? '#d1d5db' : '#333' }]}>Status</Text>
+              <View style={[styles.pickerContainer, { 
+                backgroundColor: isDark ? '#374151' : '#f9f9f9', 
+                borderColor: isDark ? '#4b5563' : '#ddd'
+              }]}>
                 <Picker
                   selectedValue={filters.status || ''}
                   onValueChange={(value) => setFilters({ ...filters, status: value })}
-                  style={styles.picker}
+                  style={[styles.picker, { color: isDark ? '#d1d5db' : '#333' }]}
                   mode="dropdown"
-                  dropdownIconColor="#666"
+                  dropdownIconColor={isDark ? '#9ca3af' : '#666'}
                 >
                   <Picker.Item label="All Statuses" value="" />
                   {statusOptions.map((option) => (
@@ -399,10 +437,10 @@ export default function AttractionBookingsScreen() {
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <TouchableOpacity style={[styles.resetButton, { backgroundColor: isDark ? '#374151' : '#6b7280' }]} onPress={handleReset}>
               <Text style={styles.buttonText}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+            <TouchableOpacity style={[styles.searchButton, { backgroundColor: isDark ? '#60a5fa' : '#1e40af' }]} onPress={handleSearch}>
               <Text style={styles.buttonText}>Search</Text>
             </TouchableOpacity>
           </View>
@@ -411,7 +449,7 @@ export default function AttractionBookingsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
+          <ActivityIndicator size="large" color={isDark ? '#60a5fa' : '#1e40af'} />
         </View>
       ) : (
         <>
@@ -424,14 +462,14 @@ export default function AttractionBookingsScreen() {
             onEndReachedThreshold={0.1}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No bookings found</Text>
+                <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#666' }]}>No bookings found</Text>
               </View>
             }
             ListFooterComponent={() => 
               isLoadingMore ? (
                 <View style={styles.loadMoreContainer}>
-                  <ActivityIndicator size="small" color="#1e40af" />
-                  <Text style={styles.loadMoreText}>Loading more...</Text>
+                  <ActivityIndicator size="small" color={isDark ? '#60a5fa' : '#1e40af'} />
+                  <Text style={[styles.loadMoreText, { color: isDark ? '#9ca3af' : '#666' }]}>Loading more...</Text>
                 </View>
               ) : null
             }
