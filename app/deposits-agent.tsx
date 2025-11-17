@@ -539,7 +539,7 @@ export default function AgentDepositsScreen() {
                 Attachment Preview
               </Text>
               <TouchableOpacity
-                style={styles.modalCloseButton}
+                style={[styles.modalCloseButton, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}
                 onPress={closeAttachmentModal}
               >
                 <Ionicons name="close" size={24} color={isDark ? '#f3f4f6' : '#111827'} />
@@ -968,8 +968,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: '90%',
-    height: '80%',
+    width: '80%',
+    height: '50%',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -991,7 +991,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    // backgroundColor moved to inline style for theme support
   },
   modalBody: {
     flex: 1,
