@@ -3,22 +3,22 @@ import { format } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '../../hooks/use-theme';
 import { flightService } from '@/services/flight';
 import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { FlightBookingDetails } from '@/types/flight-details';
+import { useTheme } from '../../hooks/use-theme';
 
 const { width } = Dimensions.get('window');
 
