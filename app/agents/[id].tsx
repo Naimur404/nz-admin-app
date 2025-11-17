@@ -5,7 +5,6 @@ import { marketService } from '@/services/market';
 import { AgentDetails, AgentDocument } from '@/types/agent';
 import { MarketItem } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
