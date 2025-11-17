@@ -1,7 +1,7 @@
 import { useTheme } from '@/hooks/use-theme';
 import { attractionService } from '@/services/attraction';
-import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { AttractionBooking } from '@/types/attraction';
+import { BookingOperationLog, OperationDetails } from '@/types/booking-operation-log';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';

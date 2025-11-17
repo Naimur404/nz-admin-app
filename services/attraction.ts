@@ -1,5 +1,5 @@
-import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { AttractionBookingDetailResponse, AttractionBookingsResponse } from '@/types/attraction';
+import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { apiClient } from './api';
 
 interface GetAttractionBookingsParams {
