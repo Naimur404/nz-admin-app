@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } fro
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -13,12 +14,13 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-function useProtectedRoute(isAuthenticated: boolean, isLoading: boolean) {
+function useProtectedRoute(isAuthenticated: boolean | null, isLoading: boolean) {
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading) return;
+    // Don't do anything while loading
+    if (isLoading || isAuthenticated === null) return;
 
     const inAuthGroup = segments[0] === 'auth';
 
@@ -29,13 +31,14 @@ function useProtectedRoute(isAuthenticated: boolean, isLoading: boolean) {
       // Redirect to main app if already authenticated
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [isAuthenticated, segments, isLoading, router]);
 }
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Use null as initial state to distinguish from false (not authenticated)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,15 +48,20 @@ export default function RootLayout() {
       router.replace('/auth/login' as any);
     });
     
+    // Check auth immediately on app start
     checkAuth();
-  }, []);
+  }, [router]);
 
   const checkAuth = async () => {
     try {
+      setIsLoading(true);
       const token = await authService.getToken();
-      const newAuthState = !!token;
+      const user = await authService.getUser();
+      
+      // Only consider authenticated if both token and user exist
+      const newAuthState = !!(token && user);
       setIsAuthenticated(newAuthState);
-      console.log('Auth check - Token exists:', newAuthState);
+      console.log('Auth check - Token exists:', !!token, 'User exists:', !!user, 'Authenticated:', newAuthState);
     } catch (error) {
       console.log('Auth check error:', error);
       setIsAuthenticated(false);
@@ -62,22 +70,40 @@ export default function RootLayout() {
     }
   };
 
-  // Re-check auth when app comes to foreground or after login
+  // Re-check auth when app comes to foreground or after login (reduced frequency)
   useEffect(() => {
-    const interval = setInterval(checkAuth, 30000); // Check every 30 seconds instead of 5
+    const interval = setInterval(() => {
+      // Only check auth if we think we're authenticated to avoid unnecessary calls
+      if (isAuthenticated) {
+        checkAuth();
+      }
+    }, 60000); // Check every 60 seconds instead of 30
     return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Expose checkAuth function globally for login success
+  useEffect(() => {
+    (global as any).refreshAuth = checkAuth;
+    return () => {
+      delete (global as any).refreshAuth;
+    };
   }, []);
 
   useProtectedRoute(isAuthenticated, isLoading);
 
+  // Show loading screen while checking authentication
   if (isLoading) {
-    return null; // or a loading screen
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1e40af" />
+      </View>
+    );
   }
 
   return (
     <ThemeProvider>
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack initialRouteName={isAuthenticated ? "(tabs)" : "auth/login"}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
           <Stack.Screen name="profile" options={{ headerShown: false, title: 'Profile' }} />
@@ -99,3 +125,12 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1e40af',
+  },
+});

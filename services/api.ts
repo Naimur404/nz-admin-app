@@ -23,6 +23,12 @@ export const apiClient = axios.create({
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
   async (config) => {
+    // Check if we're in the middle of logging out
+    if (authService.isLoggingOut && authService.isLoggingOut()) {
+      console.log('Blocking API request during logout:', config.url);
+      return Promise.reject(new Error('Request blocked during logout'));
+    }
+    
     const token = await SecureStore.getItemAsync('access_token');
     console.log('API Base URL:', API_BASE_URL);
     console.log('Request URL:', `${API_BASE_URL}${config.url}`);
@@ -47,15 +53,16 @@ apiClient.interceptors.response.use(
       console.log('Unauthorized access - token expired or invalid');
       console.log('Request URL:', error.config?.url);
       
-      // Only clear tokens and redirect for specific endpoints that require auth
-      // Avoid infinite loops by not redirecting on login endpoint
-      if (!error.config?.url?.includes('/auth/login')) {
-        // Clear stored tokens
-        await authService.logout();
-        
-        // Redirect to login if callback is set
-        if (authRedirectCallback) {
-          authRedirectCallback();
+      // Only handle 401 errors if we're not already logging out and not on login endpoint
+      if (!authService.isLoggingOut || !authService.isLoggingOut()) {
+        if (!error.config?.url?.includes('/auth/login')) {
+          // Clear stored tokens (this will set the logout flag)
+          await authService.logout();
+          
+          // Redirect to login if callback is set
+          if (authRedirectCallback) {
+            authRedirectCallback();
+          }
         }
       }
     }

@@ -19,6 +19,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Skeleton, SkeletonStats } from '@/components/ui/skeleton';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -29,16 +30,51 @@ export default function HomeScreen() {
   const [ticketDataCount, setTicketDataCount] = useState<DataCountResponse | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-screenWidth * 0.8))[0];
+  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const isDark = theme === 'dark';
 
   useEffect(() => {
-    loadProfile();
-    loadTicketDataCount();
+    // Only load data if we're authenticated
+    checkAuthAndLoadData();
   }, []);
+
+  const checkAuthAndLoadData = async () => {
+    try {
+      setLoading(true);
+      // Check if we have a valid token first
+      const token = await require('@/services/auth').authService.getToken();
+      if (!token) {
+        console.log('No token found, skipping data load');
+        setLoading(false);
+        setProfileLoading(false);
+        setStatsLoading(false);
+        return;
+      }
+      
+      // Only load data if we have a token
+      loadProfile();
+      loadTicketDataCount();
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setLoading(false);
+      setProfileLoading(false);
+      setStatsLoading(false);
+    }
+  };
 
   const loadProfile = async () => {
     try {
+      setProfileLoading(true);
+      // Check token before making API call
+      const token = await require('@/services/auth').authService.getToken();
+      if (!token) {
+        console.log('No token available, skipping profile load');
+        return;
+      }
+      
       const response = await profileService.getUserProfile();
       setProfile(response.data);
     } catch (error: any) {
@@ -47,21 +83,43 @@ export default function HomeScreen() {
       // Check if it's a 401 error (authentication failed)
       if (error.response?.status === 401) {
         console.log('Authentication failed, token may be expired');
-        // Don't try to reload profile immediately if auth failed
+        // Clear profile data but don't try to redirect from here
+        setProfile(null);
         return;
       }
       
       // For other errors, you might want to show a user-friendly message
       // or attempt a retry logic here
+    } finally {
+      setProfileLoading(false);
     }
   };
 
   const loadTicketDataCount = async () => {
     try {
+      setStatsLoading(true);
+      // Check token before making API call
+      const token = await require('@/services/auth').authService.getToken();
+      if (!token) {
+        console.log('No token available, skipping ticket data count load');
+        return;
+      }
+      
       const response = await ticketSupportService.getDataCount();
       setTicketDataCount(response);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading ticket data count:', error);
+      
+      // Check if it's a 401 error (authentication failed)
+      if (error.response?.status === 401) {
+        console.log('Authentication failed for ticket data, token may be expired');
+        // Clear ticket data but don't try to redirect from here
+        setTicketDataCount(null);
+        return;
+      }
+    } finally {
+      setStatsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -190,49 +248,78 @@ export default function HomeScreen() {
 
       <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-          <Text style={[styles.welcomeText, { color: isDark ? '#f3f4f6' : '#333' }]}>Welcome back!</Text>
-          <Text style={[styles.welcomeSubtext, { color: isDark ? '#9ca3af' : '#666' }]}>{profile?.name}</Text>
-        </View>
-
-        <View style={styles.statsContainer}>
-          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <View style={styles.statIcon}>
-              <Ionicons name="bus" size={24} color="#1e40af" />
-            </View>
-            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>150</Text>
-            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Bus Bookings</Text>
+        
+        {/* Welcome Section with Skeleton */}
+        {profileLoading ? (
+          <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+            <Skeleton width="60%" height={24} style={{ marginBottom: 8 }} />
+            <Skeleton width="40%" height={16} />
           </View>
-
-          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <View style={styles.statIcon}>
-              <Ionicons name="camera" size={24} color="#8b5cf6" />
-            </View>
-            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>89</Text>
-            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Attractions</Text>
+        ) : (
+          <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+            <Text style={[styles.welcomeText, { color: isDark ? '#f3f4f6' : '#333' }]}>Welcome back!</Text>
+            <Text style={[styles.welcomeSubtext, { color: isDark ? '#9ca3af' : '#666' }]}>{profile?.name || 'User'}</Text>
           </View>
+        )}
 
-          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <View style={styles.statIcon}>
-              <Ionicons name="bed" size={24} color="#10b981" />
+        {/* Stats Section with Skeleton */}
+        {statsLoading ? (
+          <SkeletonStats columns={4} />
+        ) : (
+          <View style={styles.statsContainer}>
+            <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <View style={styles.statIcon}>
+                <Ionicons name="bus" size={24} color="#1e40af" />
+              </View>
+              <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>150</Text>
+              <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Bus Bookings</Text>
             </View>
-            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>45</Text>
-            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Hotels</Text>
-          </View>
 
-          <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <View style={styles.statIcon}>
-              <Ionicons name="airplane" size={24} color="#f59e0b" />
+            <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <View style={styles.statIcon}>
+                <Ionicons name="camera" size={24} color="#8b5cf6" />
+              </View>
+              <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>89</Text>
+              <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Attractions</Text>
             </View>
-            <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>120</Text>
-            <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Flights</Text>
-          </View>
-        </View>
 
-        <View style={styles.quickActions}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Quick Actions</Text>
-          
-          <View style={styles.actionGrid}>
+            <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <View style={styles.statIcon}>
+                <Ionicons name="bed" size={24} color="#10b981" />
+              </View>
+              <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>45</Text>
+              <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Hotels</Text>
+            </View>
+
+            <View style={[styles.statCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+              <View style={styles.statIcon}>
+                <Ionicons name="airplane" size={24} color="#f59e0b" />
+              </View>
+              <Text style={[styles.statNumber, { color: isDark ? '#f3f4f6' : '#333' }]}>120</Text>
+              <Text style={[styles.statLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Flights</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Quick Actions Section with Skeleton */}
+        {loading ? (
+          <View style={styles.quickActions}>
+            <Skeleton width="50%" height={20} style={{ marginBottom: 16, marginLeft: 16 }} />
+            <View style={styles.actionGrid}>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <View key={index} style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+                  <Skeleton width={32} height={32} borderRadius={16} style={{ marginBottom: 8 }} />
+                  <Skeleton width="80%" height={16} style={{ marginBottom: 4 }} />
+                  <Skeleton width="60%" height={12} />
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.quickActions}>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#333' }]}>Quick Actions</Text>
+            
+            <View style={styles.actionGrid}>
             <TouchableOpacity
               style={[styles.actionCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}
               onPress={() => router.push('/bus/bookings' as any)}
@@ -289,7 +376,8 @@ export default function HomeScreen() {
               <Text style={[styles.actionSubtitle, { color: isDark ? '#9ca3af' : '#666' }]}>Air ticket assistance</Text>
             </TouchableOpacity>
           </View>
-        </View>
+          </View>
+        )}
       </ScrollView>
       </View>
 

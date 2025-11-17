@@ -2,7 +2,7 @@ import { authService } from '@/services/auth';
 import { LoginPayload } from '@/types/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,6 +26,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    // Reset logout state when login screen mounts
+    authService.resetLogoutState();
+  }, []);
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
@@ -41,7 +46,12 @@ export default function LoginScreen() {
 
       const response = await authService.login(payload);
       
-      // Navigate immediately without alert
+      // Refresh auth state globally before navigation
+      if ((global as any).refreshAuth) {
+        await (global as any).refreshAuth();
+      }
+      
+      // Navigate to main app
       router.replace('/(tabs)');
       
     } catch (error: any) {

@@ -18,7 +18,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme';
+import { SkeletonList } from '@/components/ui/skeleton';
 
 export default function AgentFlightBookingsScreen() {
   const router = useRouter();
@@ -657,9 +658,7 @@ export default function AgentFlightBookingsScreen() {
       )}
 
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDark ? '#60a5fa' : '#1e40af'} />
-        </View>
+        <SkeletonList itemCount={8} />
       ) : (
         <>
           <FlatList

@@ -1,11 +1,11 @@
 import { authService } from '@/services/auth';
 import { profileService } from '@/services/profile';
 import { UserProfile } from '@/types/profile';
+import { useTheme } from '@/hooks/use-theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     ScrollView,
     StyleSheet,
@@ -14,9 +14,12 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonProfile, Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,8 +70,22 @@ export default function ProfileScreen() {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            await authService.logout();
-            router.replace('/auth/login' as any);
+            try {
+              // Clear token first to prevent any API calls
+              await authService.logout();
+              
+              // Refresh global auth state
+              if ((global as any).refreshAuth) {
+                await (global as any).refreshAuth();
+              }
+              
+              // Navigate to login screen immediately
+              router.replace('/auth/login' as any);
+            } catch (error) {
+              console.error('Logout error:', error);
+              // Even if logout fails, still redirect to login
+              router.replace('/auth/login' as any);
+            }
           },
         },
       ]
@@ -77,34 +94,54 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
           <View style={styles.headerButton} />
         </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e40af" />
-        </View>
+        <ScrollView style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+          <SkeletonProfile />
+          <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+            <View style={[styles.infoRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
+              <Skeleton width={20} height={20} borderRadius={10} />
+              <View style={styles.infoContent}>
+                <Skeleton width="30%" height={14} style={{ marginBottom: 4 }} />
+                <Skeleton width="60%" height={16} />
+              </View>
+            </View>
+            <View style={[styles.infoRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
+              <Skeleton width={20} height={20} borderRadius={10} />
+              <View style={styles.infoContent}>
+                <Skeleton width="40%" height={14} style={{ marginBottom: 4 }} />
+                <Skeleton width="70%" height={16} />
+              </View>
+            </View>
+            <View style={[styles.logoutRow, { borderTopColor: isDark ? '#374151' : '#f3f4f6' }]}>
+              <Skeleton width={20} height={20} borderRadius={10} />
+              <Skeleton width="30%" height={16} style={{ marginLeft: 12 }} />
+            </View>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
+        <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
           <View style={styles.headerButton} />
         </View>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadProfile}>
+        <View style={[styles.loadingContainer, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+          <Text style={[styles.errorText, { color: isDark ? '#f87171' : '#ef4444' }]}>{error}</Text>
+          <TouchableOpacity style={[styles.retryButton, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]} onPress={loadProfile}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -113,8 +150,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -122,43 +159,46 @@ export default function ProfileScreen() {
         <View style={styles.headerButton} />
       </View>
 
-      <ScrollView style={styles.container}>
-        <View style={styles.profileCard}>
+      <ScrollView style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
+        <View style={[styles.profileCard, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
           <View style={styles.avatarContainer}>
             {profile?.avatar ? (
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
                 {/* Avatar image would go here */}
-                <Ionicons name="person" size={40} color="#666" />
+                <Ionicons name="person" size={40} color={isDark ? '#9ca3af' : '#666'} />
               </View>
             ) : (
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={40} color="#666" />
+              <View style={[styles.avatar, { backgroundColor: isDark ? '#374151' : '#f3f4f6' }]}>
+                <Ionicons name="person" size={40} color={isDark ? '#9ca3af' : '#666'} />
               </View>
             )}
           </View>
 
-          <Text style={styles.name}>{profile?.name || 'No Name'}</Text>
-          <Text style={styles.userType}>{profile?.user_type?.toUpperCase() || 'USER'}</Text>
+          <Text style={[styles.name, { color: isDark ? '#f3f4f6' : '#333' }]}>{profile?.name || 'No Name'}</Text>
+          <Text style={[styles.userType, { 
+            color: isDark ? '#60a5fa' : '#1e40af', 
+            backgroundColor: isDark ? '#1e3a8a' : '#dbeafe' 
+          }]}>{profile?.user_type?.toUpperCase() || 'USER'}</Text>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.infoRow}>
-            <Ionicons name="mail-outline" size={20} color="#666" />
+        <View style={[styles.section, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
+          <View style={[styles.infoRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
+            <Ionicons name="mail-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>{profile?.email || 'Not provided'}</Text>
+              <Text style={[styles.infoLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Email</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#333' }]}>{profile?.email || 'Not provided'}</Text>
             </View>
           </View>
 
-          <View style={styles.infoRow}>
-            <Ionicons name="call-outline" size={20} color="#666" />
+          <View style={[styles.infoRow, { borderBottomColor: isDark ? '#374151' : '#f3f4f6' }]}>
+            <Ionicons name="call-outline" size={20} color={isDark ? '#9ca3af' : '#666'} />
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Contact</Text>
-              <Text style={styles.infoValue}>{profile?.contact || 'Not provided'}</Text>
+              <Text style={[styles.infoLabel, { color: isDark ? '#9ca3af' : '#666' }]}>Contact</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#f3f4f6' : '#333' }]}>{profile?.contact || 'Not provided'}</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.logoutRow} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.logoutRow, { borderTopColor: isDark ? '#374151' : '#f3f4f6' }]} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#ef4444" />
             <Text style={styles.logoutText}>Logout</Text>
             <Ionicons name="chevron-forward" size={20} color="#ef4444" />
@@ -172,10 +212,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1e40af',
   },
   header: {
-    backgroundColor: '#1e40af',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -195,16 +233,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
   errorText: {
-    color: '#ef4444',
     fontSize: 16,
     marginBottom: 16,
   },
@@ -219,7 +254,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   profileCard: {
-    backgroundColor: '#fff',
     alignItems: 'center',
     padding: 24,
     margin: 16,
@@ -237,27 +271,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
   },
   userType: {
     fontSize: 14,
-    color: '#1e40af',
     fontWeight: '600',
-    backgroundColor: '#dbeafe',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   section: {
-    backgroundColor: '#fff',
     margin: 16,
     borderRadius: 12,
     padding: 16,
@@ -270,7 +299,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 16,
   },
   infoRow: {
@@ -278,7 +306,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   infoContent: {
     marginLeft: 12,
@@ -286,12 +313,10 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 2,
   },
   infoValue: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
   actionRow: {
@@ -299,11 +324,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   actionText: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
     marginLeft: 12,
     flex: 1,
@@ -314,7 +337,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
   },
   logoutText: {
     fontSize: 16,

@@ -19,6 +19,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonList } from '@/components/ui/skeleton';
 
 export default function HotelBookingsScreen() {
   const { theme } = useTheme();
@@ -510,9 +511,7 @@ export default function HotelBookingsScreen() {
       )}
 
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDark ? '#3b82f6' : '#1e40af'} />
-        </View>
+        <SkeletonList itemCount={8} />
       ) : (
         <>
           <FlatList
