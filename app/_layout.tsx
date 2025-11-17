@@ -70,16 +70,9 @@ export default function RootLayout() {
     }
   };
 
-  // Re-check auth when app comes to foreground or after login (reduced frequency)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Only check auth if we think we're authenticated to avoid unnecessary calls
-      if (isAuthenticated) {
-        checkAuth();
-      }
-    }, 60000); // Check every 60 seconds instead of 30
-    return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  // Re-check auth when app comes to foreground (disabled automatic interval)
+  // Removed automatic auth checks that were causing unwanted refreshes
+  // Auth will only be checked on app start, manual refresh, or login/logout
 
   // Expose checkAuth function globally for login success
   useEffect(() => {

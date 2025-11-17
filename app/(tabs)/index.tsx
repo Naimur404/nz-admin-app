@@ -6,13 +6,14 @@ import { UserProfile } from '@/types/profile';
 import { DataCountResponse } from '@/types/ticket-support';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Animated,
   Dimensions,
   Image,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,6 +34,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasInitialized = useRef(false);
 
   const isDark = theme === 'dark';
 
@@ -61,9 +64,12 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    // Only load data if we're authenticated
-    checkAuthAndLoadData();
-  }, []);
+    // Only load data once on mount
+    if (!hasInitialized.current) {
+      checkAuthAndLoadData();
+      hasInitialized.current = true;
+    }
+  }, []); // Empty dependency array - only run once on mount
 
   const checkAuthAndLoadData = async () => {
     try {
@@ -89,7 +95,35 @@ export default function HomeScreen() {
     }
   };
 
-  const loadProfile = async () => {
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Check if we have a valid token
+      const token = await require('@/services/auth').authService.getToken();
+      if (!token) {
+        console.log('No token found, skipping refresh');
+        return;
+      }
+      
+      // Reset loading states to show skeletons
+      setProfileLoading(true);
+      setStatsLoading(true);
+      setLoading(true);
+      
+      // Reload data
+      await Promise.all([
+        loadProfile(),
+        loadTicketDataCount()
+      ]);
+    } catch (error) {
+      console.error('Error during refresh:', error);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
+  };
+
+  const loadProfile = async (): Promise<void> => {
     try {
       setProfileLoading(true);
       // Check token before making API call
@@ -100,7 +134,6 @@ export default function HomeScreen() {
       }
       
       const profileData = await profileService.getUserProfile();
-      console.log('Profile Data:', profileData);
       
       // The profile service already returns the data we need
       if (profileData) {
@@ -127,7 +160,7 @@ export default function HomeScreen() {
     }
   };
 
-  const loadTicketDataCount = async () => {
+  const loadTicketDataCount = async (): Promise<void> => {
     try {
       setStatsLoading(true);
       // Check token before making API call
@@ -279,10 +312,21 @@ export default function HomeScreen() {
       </View>
 
       <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#f5f5f5' }]}>
-        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[isDark ? '#3b82f6' : '#2563eb']}
+              tintColor={isDark ? '#3b82f6' : '#2563eb'}
+            />
+          }
+        >
         
         {/* Welcome Section with Skeleton */}
-        {profileLoading ? (
+        {(profileLoading || refreshing) ? (
           <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
             <Skeleton width="60%" height={24} style={{ marginBottom: 8 }} />
             <Skeleton width="40%" height={16} />
@@ -299,7 +343,7 @@ export default function HomeScreen() {
         )}
 
         {/* Stats Section with Skeleton */}
-        {statsLoading ? (
+        {(statsLoading || refreshing) ? (
           <SkeletonStats columns={4} />
         ) : (
           <View style={styles.statsContainer}>
@@ -338,7 +382,7 @@ export default function HomeScreen() {
         )}
 
         {/* Quick Actions Section with Skeleton */}
-        {loading ? (
+        {(loading || refreshing) ? (
           <View style={styles.quickActions}>
             <Skeleton width="50%" height={20} style={{ marginBottom: 16, marginLeft: 16 }} />
             <View style={styles.actionGrid}>
