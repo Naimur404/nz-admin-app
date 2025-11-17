@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } fro
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -55,16 +55,26 @@ export default function RootLayout() {
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      const token = await authService.getToken();
-      const user = await authService.getUser();
+      
+      // Start auth check and minimum loading time in parallel
+      const [authResult] = await Promise.all([
+        (async () => {
+          const token = await authService.getToken();
+          const user = await authService.getUser();
+          return { token, user };
+        })(),
+        new Promise(resolve => setTimeout(resolve, 2000)) // Minimum 2 seconds loading
+      ]);
       
       // Only consider authenticated if both token and user exist
-      const newAuthState = !!(token && user);
+      const newAuthState = !!(authResult.token && authResult.user);
       setIsAuthenticated(newAuthState);
-      console.log('Auth check - Token exists:', !!token, 'User exists:', !!user, 'Authenticated:', newAuthState);
+      console.log('Auth check - Token exists:', !!authResult.token, 'User exists:', !!authResult.user, 'Authenticated:', newAuthState);
     } catch (error) {
       console.log('Auth check error:', error);
       setIsAuthenticated(false);
+      // Still wait minimum time even on error for consistent UX
+      await new Promise(resolve => setTimeout(resolve, 2000));
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +98,29 @@ export default function RootLayout() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1e40af" />
+        <StatusBar style="light" backgroundColor="#1e40af" />
+        
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('@/assets/images/mynztrip-white.png')} 
+            style={styles.logo} 
+            resizeMode="contain"
+          />
+        </View>
+        
+        {/* App Title */}
+        <Text style={styles.appTitle}>MyNZ Admin</Text>
+        <Text style={styles.appSubtitle}>Travel Management System</Text>
+        
+        {/* Loading Indicator */}
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+        
+        {/* Version */}
+        <Text style={styles.versionText}>Version 1.0.0</Text>
       </View>
     );
   }
@@ -125,5 +157,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#1e40af',
+    paddingHorizontal: 32,
+  },
+  logoContainer: {
+    marginBottom: 32,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+  },
+  appTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  appSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 48,
+    textAlign: 'center',
+  },
+  loadingIndicator: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 16,
+    fontWeight: '500',
+  },
+  versionText: {
+    position: 'absolute',
+    bottom: 48,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
   },
 });
