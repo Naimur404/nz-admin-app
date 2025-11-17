@@ -1,7 +1,6 @@
 import { BookingOperationLogResponse } from '@/types/booking-operation-log';
 import { FlightBookingFilters, FlightBookingsResponse, FlightBookingType } from '@/types/flight';
 import { FlightBookingDetailsResponse } from '@/types/flight-details';
-import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 import { bookingStatusService } from './booking-status';
 

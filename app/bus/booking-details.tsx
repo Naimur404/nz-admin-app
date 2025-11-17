@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/use-theme';
 import { busService } from '@/services/bus';
 import { BusBookingDetails } from '@/types/bus';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +14,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/use-theme';
 
 export default function BookingDetailsScreen() {
   const { theme } = useTheme();
@@ -96,7 +96,11 @@ export default function BookingDetailsScreen() {
         {/* Booking Info Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Booking Information</Text>
-          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+          <View style={[styles.card, { 
+            backgroundColor: isDark ? '#1f2937' : '#fff', 
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+            shadowColor: isDark ? '#000' : '#000'
+          }]}>
             <View style={styles.row}>
               <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Booking ID:</Text>
               <View style={[styles.bookingIdBadge, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}>
@@ -136,7 +140,11 @@ export default function BookingDetailsScreen() {
         {/* Journey Details */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Journey Details</Text>
-          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+          <View style={[styles.card, { 
+            backgroundColor: isDark ? '#1f2937' : '#fff', 
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+            shadowColor: isDark ? '#000' : '#000'
+          }]}>
             <View style={styles.row}>
               <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Operator:</Text>
               <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.operator_name}</Text>
@@ -177,7 +185,11 @@ export default function BookingDetailsScreen() {
             Passengers ({booking.passenger_counts.total})
           </Text>
           {booking.passengers.map((passenger, index) => (
-            <View key={passenger.id} style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+            <View key={passenger.id} style={[styles.card, { 
+              backgroundColor: isDark ? '#1f2937' : '#fff', 
+              borderColor: isDark ? '#374151' : '#e5e7eb',
+              shadowColor: isDark ? '#000' : '#000'
+            }]}>
               <View style={styles.passengerHeader}>
                 <Text style={[styles.passengerName, { color: isDark ? '#f3f4f6' : '#111827' }]}>
                   {passenger.full_name}
@@ -208,7 +220,11 @@ export default function BookingDetailsScreen() {
         {/* Agent Information */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Agent Information</Text>
-          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+          <View style={[styles.card, { 
+            backgroundColor: isDark ? '#1f2937' : '#fff', 
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+            shadowColor: isDark ? '#000' : '#000'
+          }]}>
             <View style={styles.row}>
               <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Agent Name:</Text>
               <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>{booking.agent_info.agent_name}</Text>
@@ -234,7 +250,11 @@ export default function BookingDetailsScreen() {
         {/* Price Details */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#f3f4f6' : '#111827' }]}>Price Breakdown</Text>
-          <View style={[styles.card, { backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#e5e7eb' }]}>
+          <View style={[styles.card, { 
+            backgroundColor: isDark ? '#1f2937' : '#fff', 
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+            shadowColor: isDark ? '#000' : '#000'
+          }]}>
             <View style={styles.row}>
               <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Base Price:</Text>
               <Text style={[styles.value, { color: isDark ? '#f3f4f6' : '#111827' }]}>
@@ -427,40 +447,34 @@ const styles = StyleSheet.create({
   passengerName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e40af',
   },
   leadBadge: {
     fontSize: 12,
-    color: '#10b981',
     fontWeight: 'normal',
   },
   divider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
     marginVertical: 8,
+    borderBottomWidth: 1,
   },
   totalLabel: {
     fontSize: 16,
-    color: '#333',
     fontWeight: 'bold',
     flex: 1,
   },
   totalValue: {
     fontSize: 16,
-    color: '#1e40af',
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'right',
   },
   profit: {
     fontSize: 14,
-    color: '#10b981',
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'right',
   },
   discount: {
-    color: '#10b981',
   },
   bottomSpacing: {
     height: 32,

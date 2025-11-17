@@ -1,5 +1,4 @@
 import { AttractionBookingDetailResponse, AttractionBookingsResponse } from '@/types/attraction';
-import { logDateInfo } from '@/utils/date';
 import { apiClient } from './api';
 
 interface GetAttractionBookingsParams {

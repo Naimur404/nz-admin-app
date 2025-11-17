@@ -1,4 +1,3 @@
-import { logDateInfo } from '@/utils/date';
 import { BusBookingDetailsResponse, BusBookingFilters, BusBookingResponse } from '../types/bus';
 import { apiClient } from './api';
 
