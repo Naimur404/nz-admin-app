@@ -56,14 +56,12 @@ export default function TicketSupportScreen() {
   });
 
   const [filters, setFilters] = useState<TicketSupportFilters>(() => {
-    // Always set today's date using local timezone for UI display
-    const today = getTodayLocalDate();
     return {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today, // Show today's date in UI (local timezone)
+      from_date: '', // Allow user to select any date
       market_id: '',
       page: 1,
       per_page: 20,
@@ -71,7 +69,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: today, // Show today's date in UI (local timezone)
+      to_date: '',   // Allow user to select any date
     };
   });
 
@@ -79,16 +77,7 @@ export default function TicketSupportScreen() {
     loadInitialData();
   }, []);
 
-  // Ensure dates are always current using local timezone
-  useEffect(() => {
-    const today = getTodayLocalDate();
-    
-    setFilters(prev => ({
-      ...prev,
-      from_date: today,
-      to_date: today
-    }));
-  }, []); // Run once on mount to ensure fresh dates
+  // Remove the forced date setting useEffect to allow user-selected dates
 
   const loadInitialData = async () => {
     try {
@@ -273,15 +262,13 @@ export default function TicketSupportScreen() {
   };
 
   const handleReset = async () => {
-    // Always set today's date using local timezone for UI display
-    const today = getTodayLocalDate();
-    
+    // Clear all filters including dates
     const resetFilters: TicketSupportFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today, // Show today's date in UI (local timezone)
+      from_date: '', // Clear dates so user can select any date range
       market_id: '',
       page: 1,
       per_page: 20,
@@ -289,7 +276,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: today, // Show today's date in UI (local timezone)
+      to_date: '',   // Clear dates so user can select any date range
     };
     
     setTicketSupports([]);
@@ -580,7 +567,7 @@ export default function TicketSupportScreen() {
                 onPress={() => setShowFromDate(true)}
               >
                 <Text style={styles.dateText}>
-                  {filters.from_date}
+                  {filters.from_date || 'Select from date'}
                 </Text>
                 <Ionicons name="calendar-outline" size={20} color="#666" />
               </TouchableOpacity>
@@ -593,7 +580,7 @@ export default function TicketSupportScreen() {
                 onPress={() => setShowToDate(true)}
               >
                 <Text style={styles.dateText}>
-                  {filters.to_date}
+                  {filters.to_date || 'Select to date'}
                 </Text>
                 <Ionicons name="calendar-outline" size={20} color="#666" />
               </TouchableOpacity>

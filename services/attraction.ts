@@ -15,29 +15,23 @@ interface GetAttractionBookingsParams {
 export const attractionService = {
   async getBookings(params: GetAttractionBookingsParams = {}): Promise<AttractionBookingsResponse> {
     try {
-      // Always use local timezone today's date
+      // Use today's date only as fallback if no dates provided
       const today = logDateInfo('Attraction Bookings');
       
-      const response = await apiClient.get<AttractionBookingsResponse>('/attractions/bookings', {
-        params: {
-          from_date: today, // Always send today's date (local timezone)
-          to_date: today,   // Always send today's date (local timezone)
-          booking_id_or_pnr: params.booking_id_or_pnr || '',
-          agent_sl_or_name: params.agent_sl_or_name || '',
-          status: params.status || '',
-          page: params.page || 1,
-          per_page: params.per_page || 15,
-        },
-      });
-      
-      console.log('Final attraction booking request params:', {
-        from_date: today,
-        to_date: today,
+      const requestParams = {
+        from_date: params.from_date || today, // Use user date or fallback to today
+        to_date: params.to_date || today,     // Use user date or fallback to today
         booking_id_or_pnr: params.booking_id_or_pnr || '',
         agent_sl_or_name: params.agent_sl_or_name || '',
         status: params.status || '',
         page: params.page || 1,
         per_page: params.per_page || 15,
+      };
+      
+      console.log('Final attraction booking request params:', requestParams);
+      
+      const response = await apiClient.get<AttractionBookingsResponse>('/attractions/bookings', {
+        params: requestParams,
       });
       
       return response.data;

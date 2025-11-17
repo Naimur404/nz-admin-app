@@ -5,14 +5,14 @@ import { apiClient } from './api';
 export const busService = {
   async getBookings(filters: BusBookingFilters): Promise<BusBookingResponse> {
     try {
-      // Always use local timezone today's date
+      // Use today's date only as fallback if no dates provided
       const today = logDateInfo('Bus Bookings');
       
-      // Override date filters with today's date
+      // Use user-selected dates or fallback to today
       const finalFilters = {
         ...filters,
-        from_date: today, // Always send today's date (local timezone)
-        to_date: today,   // Always send today's date (local timezone)
+        from_date: filters.from_date || today, // Use user date or fallback to today
+        to_date: filters.to_date || today,     // Use user date or fallback to today
       };
       
       console.log('Final bus booking request filters:', finalFilters);

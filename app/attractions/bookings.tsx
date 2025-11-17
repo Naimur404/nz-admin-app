@@ -49,10 +49,9 @@ export default function AttractionBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<AttractionFilters>(() => {
-    const today = getTodayLocalDate();
     return {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Allow user to select any date
+      to_date: '',   // Allow user to select any date
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       status: '',
@@ -134,10 +133,9 @@ export default function AttractionBookingsScreen() {
   };
 
   const handleReset = () => {
-    const today = getTodayLocalDate();
     const resetFilters = {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Clear dates so user can select any date range
+      to_date: '',   // Clear dates so user can select any date range
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       status: '',

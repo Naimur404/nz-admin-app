@@ -10,7 +10,7 @@ export const flightService = {
     try {
       console.log(`Getting ${type} flight bookings with filters:`, filters);
       
-      // Always use local timezone today's date
+      // Use today's date only as fallback if no dates provided
       const today = logDateInfo(`Flight Bookings (${type})`);
       
       // Convert status string to index if status filter is provided
@@ -30,14 +30,14 @@ export const flightService = {
         airline_name: filters.airline_name || '',
         api_id: filters.api_id || '',
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
-        from_date: today,  // Always send today's date (local timezone)
+        from_date: filters.from_date || today,  // Use user date or fallback to today
         market_id: filters.market_id || null,
         page: filters.page || 1,
         per_page: filters.per_page || 10,
         staff: filters.staff || '',
         status: statusValue,
         ticket_no: filters.ticket_no || '',
-        to_date: today,    // Always send today's date (local timezone)
+        to_date: filters.to_date || today,      // Use user date or fallback to today
       };
 
       console.log(`Final ${type} flight booking request data:`, requestData);

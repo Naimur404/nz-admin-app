@@ -2,6 +2,7 @@ import { bookingStatusService } from '@/services/booking-status';
 import { busService } from '@/services/bus';
 import { BookingStatusMap, BusBooking, BusBookingFilters } from '@/types/bus';
 import { getTodayLocalDate } from '@/utils/date';
+import { useThemeColors } from '@/hooks/use-theme-colors';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -23,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BusBookingsScreen() {
   const router = useRouter();
+  const colors = useThemeColors();
   const [bookings, setBookings] = useState<BusBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -39,10 +41,9 @@ export default function BusBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<BusBookingFilters>(() => {
-    const today = getTodayLocalDate();
     return {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Allow user to select any date
+      to_date: '',   // Allow user to select any date
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       ticket_number: '',
@@ -119,10 +120,9 @@ export default function BusBookingsScreen() {
   };
 
   const handleReset = () => {
-    const today = getTodayLocalDate();
     const resetFilters = {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Clear dates so user can select any date range
+      to_date: '',   // Clear dates so user can select any date range
       booking_id_or_pnr: '',
       agent_sl_or_name: '',
       ticket_number: '',
@@ -257,6 +257,223 @@ export default function BusBookingsScreen() {
         return { backgroundColor: '#3b82f6' }; // Blue
     }
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    safeArea: {
+      backgroundColor: colors.headerBackground,
+    },
+    header: {
+      backgroundColor: colors.headerBackground,
+      padding: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.headerText,
+    },
+    headerButton: {
+      width: 24,
+    },
+    filterToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    filterToggleText: {
+      color: colors.headerText,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    filterContainer: {
+      backgroundColor: colors.filterBackground,
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    filterRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 12,
+    },
+    filterItem: {
+      flex: 1,
+    },
+    filterLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 6,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 6,
+      padding: 10,
+      fontSize: 14,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      color: colors.inputText,
+    },
+    dateInput: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 6,
+      padding: 10,
+      fontSize: 14,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dateText: {
+      fontSize: 14,
+      color: colors.inputText,
+    },
+    pickerContainer: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      overflow: 'hidden',
+    },
+    picker: {
+      height: 40,
+      color: colors.inputText,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 16,
+    },
+    searchButton: {
+      flex: 1,
+      backgroundColor: colors.buttonPrimary,
+      padding: 12,
+      borderRadius: 6,
+      alignItems: 'center',
+    },
+    resetButton: {
+      flex: 1,
+      backgroundColor: colors.buttonSecondary,
+      padding: 12,
+      borderRadius: 6,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: colors.buttonText,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    paginationInfo: {
+      backgroundColor: colors.card,
+      padding: 12,
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    paginationText: {
+      fontSize: 14,
+      color: colors.text,
+    },
+    listContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    bookingCard: {
+      backgroundColor: colors.card,
+      margin: 8,
+      marginBottom: 0,
+      borderRadius: 8,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.text,
+      opacity: 0.7,
+      fontWeight: '500',
+    },
+    value: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '600',
+      textAlign: 'right',
+      flex: 1,
+    },
+    pnrValue: {
+      fontSize: 14,
+      color: colors.buttonPrimary,
+      fontWeight: '600',
+      textAlign: 'right',
+      flex: 1,
+      textDecorationLine: 'underline',
+    },
+    profit: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    bookingIdBadge: {
+      backgroundColor: colors.buttonPrimary,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    bookingIdText: {
+      color: colors.buttonText,
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    brandBadge: {
+      backgroundColor: colors.buttonSecondary,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    brandText: {
+      color: colors.buttonText,
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    loadingMore: {
+      padding: 20,
+      alignItems: 'center',
+    },
+    loadingText: {
+      marginTop: 8,
+      color: colors.text,
+      fontSize: 14,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+    },
+    emptyText: {
+      fontSize: 16,
+      color: colors.text,
+      textAlign: 'center',
+      marginTop: 16,
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -427,79 +644,80 @@ export default function BusBookingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  safeArea: {
-    backgroundColor: '#1e40af',
-  },
-  header: {
-    backgroundColor: '#1e40af',
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  filterToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  filterToggleText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  filterContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  filterItem: {
-    flex: 1,
-  },
-  filterLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  dateInput: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#333',
-  },
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    safeArea: {
+      backgroundColor: colors.headerBackground,
+    },
+    header: {
+      backgroundColor: colors.headerBackground,
+      padding: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.headerText,
+    },
+    filterToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    filterToggleText: {
+      color: colors.headerText,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    filterContainer: {
+      backgroundColor: colors.filterBackground,
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    filterRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 12,
+    },
+    filterItem: {
+      flex: 1,
+    },
+    filterLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 6,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 6,
+      padding: 10,
+      fontSize: 14,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      color: colors.inputText,
+    },
+    dateInput: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 6,
+      padding: 10,
+      fontSize: 14,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dateText: {
+      fontSize: 14,
+      color: colors.inputText,
+    },
   pickerContainer: {
     backgroundColor: '#f3f4f6',
     borderRadius: 6,

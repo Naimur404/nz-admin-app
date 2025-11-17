@@ -38,20 +38,19 @@ export default function AgentFlightBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<FlightBookingFilters>(() => {
-    const today = getTodayLocalDate();
     return {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today, // Local timezone today's date
+      from_date: '', // Allow user to select any date
       market_id: null,
       page: 1,
       per_page: 10,
       staff: '',
       status: '',
       ticket_no: '',
-      to_date: today,   // Local timezone today's date
+      to_date: '',   // Allow user to select any date
     };
   });
 
@@ -139,20 +138,19 @@ export default function AgentFlightBookingsScreen() {
   };
 
   const handleReset = () => {
-    const today = getTodayLocalDate();
     const resetFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: today, // Local timezone today's date
+      from_date: '', // Clear dates so user can select any date range
       market_id: null,
       page: 1,
       per_page: 10,
       staff: '',
       status: '',
       ticket_no: '',
-      to_date: today,   // Local timezone today's date
+      to_date: '',   // Clear dates so user can select any date range
     };
     
     // Clear existing bookings and reset pagination immediately

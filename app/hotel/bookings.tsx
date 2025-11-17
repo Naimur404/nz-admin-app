@@ -38,10 +38,9 @@ export default function HotelBookingsScreen() {
 
   // Filter states
   const [filters, setFilters] = useState<HotelBookingFilters>(() => {
-    const today = getTodayLocalDate();
     return {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Allow user to select any date
+      to_date: '',   // Allow user to select any date
       booking_id_or_pnr: '',
       api_id: '',
       staff_id: '',
@@ -95,10 +94,9 @@ export default function HotelBookingsScreen() {
   };
 
   const handleReset = () => {
-    const today = getTodayLocalDate();
     const resetFilters = {
-      from_date: today, // Local timezone today's date
-      to_date: today,   // Local timezone today's date
+      from_date: '', // Clear dates so user can select any date range
+      to_date: '',   // Clear dates so user can select any date range
       booking_id_or_pnr: '',
       api_id: '',
       staff_id: '',

@@ -7,12 +7,12 @@ export const hotelService = {
     try {
       console.log('Getting hotel bookings with filters:', filters);
       
-      // Always use local timezone today's date
+      // Use today's date only as fallback if no dates provided
       const today = logDateInfo('Hotel Bookings');
       
       const requestData = {
-        from_date: today,  // Always send today's date (local timezone)
-        to_date: today,    // Always send today's date (local timezone)
+        from_date: filters.from_date || today,  // Use user date or fallback to today
+        to_date: filters.to_date || today,      // Use user date or fallback to today
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
         api_id: filters.api_id || '',
         staff_id: filters.staff_id || '',

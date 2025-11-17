@@ -7,7 +7,7 @@ export const ticketSupportService = {
     try {
       console.log('Getting ticket support data with filters:', filters);
       
-      // Always use device's local timezone date (not UTC)
+      // Use today's date only as fallback if no dates provided
       const today = logDateInfo('Ticket Support');
       
       const requestData = {
@@ -15,7 +15,7 @@ export const ticketSupportService = {
         airline_name: filters.airline_name || '',
         api_id: filters.api_id || '',
         booking_id_or_pnr: filters.booking_id_or_pnr || '',
-        from_date: today, // Always send today's date (ignore filters.from_date)
+        from_date: filters.from_date || today, // Use user date or fallback to today
         market_id: filters.market_id || '',
         page: filters.page || 1,
         per_page: filters.per_page || 20,
@@ -23,10 +23,10 @@ export const ticketSupportService = {
         staff: filters.staff || null,
         status: filters.status || '',
         ticket_no: filters.ticket_no || '',
-        to_date: today, // Always send today's date (ignore filters.to_date)
+        to_date: filters.to_date || today, // Use user date or fallback to today
       };
 
-      console.log('Final request data with today\'s date:', requestData);
+      console.log('Final request data:', requestData);
 
       const response = await apiClient.post('/admin/ticket-support', requestData);
       console.log('Ticket support response:', response.data);
