@@ -133,14 +133,18 @@ export default function AttractionBookingsScreen() {
     console.log('🔍 Search clicked');
     const searchFilters = { ...filters, page: 1 };
     setFilters(searchFilters);
+    // Reset bookings and pagination for new search
+    setBookings([]);
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
     loadBookings(false, searchFilters);
   };
 
   const handleLoadMore = () => {
     if (!isLoadingMore && pagination.currentPage < pagination.lastPage) {
       const nextPage = pagination.currentPage + 1;
-      setFilters({ ...filters, page: nextPage });
-      loadBookings(true); // Load more data
+      // Don't update filters state, just pass the next page directly
+      const loadMoreFilters = { ...filters, page: nextPage };
+      loadBookings(true, loadMoreFilters); // Load more data with next page
     }
   };
 
@@ -447,6 +451,30 @@ export default function AttractionBookingsScreen() {
         </View>
       )}
 
+      {/* Data Count Display */}
+      {!loading && (
+        <View style={[styles.dataCountContainer, { 
+          backgroundColor: isDark ? '#1f2937' : '#fff', 
+          borderBottomColor: isDark ? '#374151' : '#e5e7eb' 
+        }]}>
+          <View style={styles.dataCountContent}>
+            <Text style={[styles.dataCountText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+              Showing {bookings.length} of {pagination.total} attractions
+            </Text>
+            {pagination.total > 0 && (
+              <Text style={[styles.dataCountDetails, { color: isDark ? '#6b7280' : '#9ca3af' }]}>
+                Page {pagination.currentPage} of {pagination.lastPage}
+              </Text>
+            )}
+          </View>
+          {pagination.total > 0 && (
+            <View style={[styles.dataCountBadge, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}>
+              <Text style={styles.dataCountBadgeText}>{pagination.total}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={isDark ? '#60a5fa' : '#1e40af'} />
@@ -459,7 +487,12 @@ export default function AttractionBookingsScreen() {
             keyExtractor={(item, index) => `booking-${item.booking_id}-${index}`}
             contentContainerStyle={styles.listContainer}
             onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.1}
+            onEndReachedThreshold={0.2}
+            showsVerticalScrollIndicator={true}
+            removeClippedSubviews={true}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={10}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={[styles.emptyText, { color: isDark ? '#9ca3af' : '#666' }]}>No bookings found</Text>
@@ -687,5 +720,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  dataCountContainer: {
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+  },
+  dataCountContent: {
+    flex: 1,
+  },
+  dataCountText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  dataCountDetails: {
+    fontSize: 12,
+  },
+  dataCountBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  dataCountBadgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

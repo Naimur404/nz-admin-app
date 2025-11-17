@@ -225,8 +225,9 @@ export default function TicketSupportScreen() {
   const handleLoadMore = () => {
     if (!isLoadingMore && pagination.currentPage < pagination.lastPage) {
       const nextPage = pagination.currentPage + 1;
-      setFilters({ ...filters, page: nextPage });
-      loadTicketSupports(true); // Load more data
+      const loadMoreFilters = { ...filters, page: nextPage };
+      setFilters(loadMoreFilters);
+      loadTicketSupports(true);
     }
   };
 
@@ -339,6 +340,8 @@ export default function TicketSupportScreen() {
   };
 
   const getSupportTypeColor = (supportType: string) => {
+    if (!supportType) return { backgroundColor: '#6b7280' };
+    
     switch (supportType.toLowerCase()) {
       case 'approved':
         return { backgroundColor: '#10b981' };
@@ -467,8 +470,8 @@ export default function TicketSupportScreen() {
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: isDark ? '#9ca3af' : '#666' }]}>Status Staff/ES:</Text>
-        <View style={[styles.supportTypeBadge, getSupportTypeColor(item.support_type)]}>
-          <Text style={styles.supportTypeText}>{item.support_type}</Text>
+        <View style={[styles.supportTypeBadge, getSupportTypeColor(item.support_type || '')]}>
+          <Text style={styles.supportTypeText}>{item.support_type || 'N/A'}</Text>
         </View>
       </View>
 
@@ -506,8 +509,32 @@ export default function TicketSupportScreen() {
         </View>
       </SafeAreaView>
 
+      {/* Data Count Display */}
+      {!loading && !showFilters && (
+        <View style={[styles.dataCountContainer, { 
+          backgroundColor: isDark ? '#1f2937' : '#fff', 
+          borderBottomColor: isDark ? '#374151' : '#e5e7eb' 
+        }]}>
+          <View style={styles.dataCountContent}>
+            <Text style={[styles.dataCountText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+              Showing {ticketSupports.length} of {pagination.total} tickets
+            </Text>
+            {pagination.total > 0 && (
+              <Text style={[styles.dataCountDetails, { color: isDark ? '#6b7280' : '#9ca3af' }]}>
+                Page {pagination.currentPage} of {pagination.lastPage}
+              </Text>
+            )}
+          </View>
+          {pagination.total > 0 && (
+            <View style={[styles.dataCountBadge, { backgroundColor: isDark ? '#3b82f6' : '#1e40af' }]}>
+              <Text style={styles.dataCountBadgeText}>{pagination.total}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {/* Summary Text */}
-      {ticketStats.dataCount > 0 && (
+      {ticketStats.dataCount > 0 && !showFilters && (
         <View style={[styles.summaryTextContainer, { 
           backgroundColor: isDark ? '#1f2937' : '#fff',
           borderColor: isDark ? '#374151' : '#e5e7eb'
@@ -777,7 +804,12 @@ export default function TicketSupportScreen() {
           renderItem={renderTicketSupportItem}
           contentContainerStyle={styles.listContainer}
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.2}
+          showsVerticalScrollIndicator={true}
+          removeClippedSubviews={true}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
           ListFooterComponent={() => 
             isLoadingMore ? (
               <View style={styles.loadMoreContainer}>
@@ -1061,5 +1093,35 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 999,
+  },
+  dataCountContainer: {
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+  },
+  dataCountContent: {
+    flex: 1,
+  },
+  dataCountText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  dataCountDetails: {
+    fontSize: 12,
+  },
+  dataCountBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  dataCountBadgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
