@@ -110,7 +110,7 @@ export default function RootLayout() {
         </View>
         
         {/* App Title */}
-        <Text style={styles.appTitle}>MyNZ Admin</Text>
+        <Text style={styles.appTitle}>Admin</Text>
         <Text style={styles.appSubtitle}>Travel Management System</Text>
         
         {/* Loading Indicator */}
