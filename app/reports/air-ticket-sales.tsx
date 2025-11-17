@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-  Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, Stack } from 'expo-router';
+import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
+import { useTheme } from '@/hooks/use-theme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTheme } from '@/hooks/use-theme';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    Alert,
+    FlatList,
+    Image,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { reportsService } from '../../services/reports';
-import { AirTicketSalesReportItem, AirTicketSalesFilters } from '../../types/reports';
-import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
+import { AirTicketSalesFilters, AirTicketSalesReportItem } from '../../types/reports';
 
 export default function AirTicketSalesReport() {
   const router = useRouter();

@@ -1,16 +1,14 @@
-import { apiClient } from './api';
 import {
-  AirTicketSalesReportResponse,
-  AirTicketSalesFilters,
-  AgentAccountStatementResponse,
-  AgentAccountStatementFilters,
-  WalkingSalesReportResponse,
-  WalkingSalesFilters,
-} from '../types/reports';
-import {
-  AccountStatementResponse,
-  AccountStatementFilters,
+    AccountStatementFilters,
+    AccountStatementResponse,
 } from '../types/account-statement';
+import {
+    AirTicketSalesFilters,
+    AirTicketSalesReportResponse,
+    WalkingSalesFilters,
+    WalkingSalesReportResponse
+} from '../types/reports';
+import { apiClient } from './api';
 
 class ReportsService {
   async getAirTicketSalesReport(filters: AirTicketSalesFilters): Promise<AirTicketSalesReportResponse> {

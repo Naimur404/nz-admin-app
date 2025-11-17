@@ -1,27 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  TextInput,
-  Platform,
-} from 'react-native';
-import { StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTheme } from '../../hooks/use-theme';
-import { reportsService } from '../../services/reports';
-import { AccountStatementItem, AccountStatementFilters } from '../../types/account-statement';
 import { Skeleton, SkeletonList } from '@/components/ui/skeleton';
 import { marketService } from '@/services/market';
 import { OptionItem } from '@/types/common';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    FlatList,
+    Platform,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../hooks/use-theme';
+import { reportsService } from '../../services/reports';
+import { AccountStatementFilters, AccountStatementItem } from '../../types/account-statement';
 
 export default function AccountStatementScreen() {
   const { theme } = useTheme();
