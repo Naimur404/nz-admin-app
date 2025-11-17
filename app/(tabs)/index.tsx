@@ -18,7 +18,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -221,6 +222,25 @@ export default function HomeScreen() {
       color: '#8b5cf6',
     },
     {
+      title: 'Agent Deposits',
+      icon: 'card-outline',
+      route: '/agent-deposits',
+      color: '#059669',
+      hasSubmenu: true,
+      submenuItems: [
+        {
+          title: 'Office Deposits',
+          route: '/deposits-office',
+          icon: 'business-outline',
+        },
+        {
+          title: 'Agent Deposits',
+          route: '/deposits-agent',
+          icon: 'person-outline',
+        },
+      ],
+    },
+    {
       title: 'Reports',
       icon: 'bar-chart-outline',
       route: '/reports',
@@ -310,10 +330,28 @@ export default function HomeScreen() {
         } else if (route === '/reports/agent-account-statement') {
           console.log('Navigating to account statement');
           router.navigate('/reports/account-statement');
+        } else if (route === '/deposits-office') {
+          console.log('Navigating to office deposits');
+          router.navigate('/deposits-office');
+        } else if (route === '/deposits-agent') {
+          console.log('Navigating to agent deposits');
+          router.navigate('/deposits-agent');
+        } else if (route.startsWith('/deposits?agent_type=')) {
+          // Handle old format and convert to new format
+          const agentType = route.includes('agent_type=1') ? 'office' : 'agent';
+          const newRoute = `/deposits-${agentType}`;
+          console.log('Converting old route to new route:', route, '->', newRoute);
+          router.navigate(newRoute as any);
+        } else if (route.startsWith('/deposits?type=')) {
+          // Handle old format from Alert.alert and convert to new format
+          const agentType = route.includes('type=office') ? 'office' : 'agent';
+          const newRoute = `/deposits-${agentType}`;
+          console.log('Converting old route to new route:', route, '->', newRoute);
+          router.navigate(newRoute as any);
         } else {
           // For other not yet implemented routes
-          console.log('Report route not implemented yet:', route);
-          alert('This report feature is coming soon!');
+          console.log('Route not implemented yet:', route);
+          alert('This feature is coming soon!');
         }
       } catch (error) {
         console.error('Navigation error:', error);
@@ -586,6 +624,15 @@ export default function HomeScreen() {
                               <Text style={[styles.submenuText, { color: isDark ? '#d1d5db' : '#555' }]}>
                                 {submenuItem.title}
                               </Text>
+                              {/* Display counts for Agent Deposits submenu items */}
+                              {item.route === '/agent-deposits' && ticketDataCount && (
+                                <Text style={styles.menuBadge}>
+                                  {submenuItem.route.includes('agent_type=1') 
+                                    ? `(${ticketDataCount.agent_deposit_office})`
+                                    : `(${ticketDataCount.agent_deposit})`
+                                  }
+                                </Text>
+                              )}
                               <Ionicons name="chevron-forward" size={16} color={isDark ? '#9ca3af' : '#666'} />
                             </TouchableOpacity>
                           ))}
