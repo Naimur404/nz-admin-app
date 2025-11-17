@@ -36,6 +36,30 @@ export default function HomeScreen() {
 
   const isDark = theme === 'dark';
 
+  // Function to format display name
+  const getDisplayName = (profile: UserProfile | null): string => {
+    if (!profile) return 'User';
+    
+    // If name exists, format it nicely
+    if (profile.name) {
+      // Convert "IT DEPARTMENT" to "It Department"
+      return profile.name
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    // Fallback to email prefix if no name
+    if (profile.email) {
+      const emailPrefix = profile.email.split('@')[0];
+      return emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+    }
+    
+    // Final fallback
+    return 'User';
+  };
+
   useEffect(() => {
     // Only load data if we're authenticated
     checkAuthAndLoadData();
@@ -75,8 +99,16 @@ export default function HomeScreen() {
         return;
       }
       
-      const response = await profileService.getUserProfile();
-      setProfile(response.data);
+      const profileData = await profileService.getUserProfile();
+      console.log('Profile Data:', profileData);
+      
+      // The profile service already returns the data we need
+      if (profileData) {
+        setProfile(profileData as any);
+      } else {
+        console.log('No profile data received');
+        setProfile(null);
+      }
     } catch (error: any) {
       console.error('Error loading profile:', error);
       
@@ -257,8 +289,12 @@ export default function HomeScreen() {
           </View>
         ) : (
           <View style={[styles.welcomeSection, { backgroundColor: isDark ? '#1f2937' : '#fff' }]}>
-            <Text style={[styles.welcomeText, { color: isDark ? '#f3f4f6' : '#333' }]}>Welcome back!</Text>
-            <Text style={[styles.welcomeSubtext, { color: isDark ? '#9ca3af' : '#666' }]}>{profile?.name || 'User'}</Text>
+            <Text style={[styles.welcomeText, { color: isDark ? '#f3f4f6' : '#333' }]}>
+              Welcome back, {getDisplayName(profile)}!
+            </Text>
+            <Text style={[styles.welcomeSubtext, { color: isDark ? '#9ca3af' : '#666' }]}>
+              {profile?.user_type || profile?.panel || 'User'}
+            </Text>
           </View>
         )}
 
@@ -394,10 +430,20 @@ export default function HomeScreen() {
               <View style={[styles.drawerHeader, { backgroundColor: isDark ? '#1f2937' : '#1e40af' }]}>
                 <View style={styles.profileSection}>
                   <View style={styles.avatar}>
-                    <Ionicons name="person" size={24} color="#fff" />
+                    {profile?.avatar ? (
+                      <Image 
+                        source={{ uri: profile.avatar }} 
+                        style={styles.avatarImage}
+                        onError={() => {
+                          console.log('Failed to load avatar image');
+                        }}
+                      />
+                    ) : (
+                      <Ionicons name="person" size={24} color="#fff" />
+                    )}
                   </View>
                   <View style={styles.profileInfo}>
-                    <Text style={styles.profileName}>{profile?.name || 'User'}</Text>
+                    <Text style={styles.profileName}>{getDisplayName(profile)}</Text>
                     <Text style={styles.profileEmail}>{profile?.email || 'No email'}</Text>
                     <Text style={styles.profileType}>{profile?.user_type?.toUpperCase() || 'USER'}</Text>
                   </View>
@@ -509,6 +555,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   profileInfo: {
     flex: 1,
