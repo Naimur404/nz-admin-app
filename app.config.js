@@ -56,5 +56,8 @@ export default {
     extra: {
       apiBaseUrl: process.env.API_BASE_URL || "https://nz-b2b-api-admin.laravel.cloud/api",
     },
+    developer: {
+      tool: "expo-cli"
+    }
   },
 };

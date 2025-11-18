@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
+    // Background color handled dynamically inline
   },
   header: {
     backgroundColor: '#1e40af',

@@ -651,7 +651,7 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     backgroundColor: isDark ? '#111827' : '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: isDark ? '#1f2937' : '#1e40af',
+    // Background color handled dynamically inline
   },
   header: {
     padding: 16,

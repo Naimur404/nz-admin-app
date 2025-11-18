@@ -518,7 +518,7 @@ export default function AccountStatementScreen() {
 
 const createStyles = (isDark: boolean) => StyleSheet.create({
   safeArea: {
-    backgroundColor: isDark ? '#1f2937' : '#1e40af',
+    // Background color handled dynamically inline
   },
   container: {
     flex: 1,

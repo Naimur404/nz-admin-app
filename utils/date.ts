@@ -9,10 +9,8 @@ export const getTodayLocalDate = (): string => {
     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
     const day = String(currentDate.getDate()).padStart(2, '0');
     const result = `${year}-${month}-${day}`;
-    console.log('getTodayLocalDate result:', result);
     return result;
   } catch (error) {
-    console.error('Error in getTodayLocalDate:', error);
     return '2025-11-17'; // Fallback to current date
   }
 };
@@ -25,14 +23,8 @@ export const logDateInfo = (context: string) => {
     const currentDateTime = new Date();
     const localDate = getTodayLocalDate();
     
-    console.log(`${context} - Current device date/time UTC:`, currentDateTime.toISOString());
-    console.log(`${context} - Current device date/time LOCAL:`, currentDateTime.toString());
-    console.log(`${context} - Device timezone offset (minutes):`, currentDateTime.getTimezoneOffset());
-    console.log(`${context} - Local date calculated:`, localDate);
-    
     return localDate;
   } catch (error) {
-    console.error(`Error in logDateInfo for ${context}:`, error);
     return '2025-11-17'; // Fallback to current date
   }
 };

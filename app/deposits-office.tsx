@@ -107,9 +107,7 @@ export default function OfficeDepositsScreen() {
         per_page: pagination.perPage
       };
       
-      console.log('Loading office deposits with params:', params);
       const response = await depositsService.getOfficeDeposits(params);
-      console.log('Office deposits response:', response);
       
       setDeposits(response.data || []);
       
@@ -133,7 +131,6 @@ export default function OfficeDepositsScreen() {
       });
       
     } catch (error: any) {
-      console.error('Error loading office deposits:', error);
       Alert.alert('Error', 'Failed to load office deposits data');
     } finally {
       setLoading(false);
@@ -145,7 +142,7 @@ export default function OfficeDepositsScreen() {
       const response = await marketService.getMarketList();
       setMarkets(response || []);
     } catch (error) {
-      console.error('Error loading markets:', error);
+      // Market loading failed silently
     }
   };
 
@@ -161,7 +158,6 @@ export default function OfficeDepositsScreen() {
   };
 
   const handleReset = () => {
-    console.log('🔄 Reset clicked');
     const resetFilters = {
       from_date: '', // Clear dates so user can select any date range
       to_date: '',   // Clear dates so user can select any date range
@@ -172,7 +168,6 @@ export default function OfficeDepositsScreen() {
       agent_type: 1 // Always 1 for Office
     };
     
-    console.log('Reset filters:', resetFilters);
     setFilters(resetFilters);
     setDeposits([]); // Clear existing deposits
     
@@ -589,9 +584,6 @@ export default function OfficeDepositsScreen() {
   );
 
   function renderDepositItem({ item }: { item: DepositItem }) {
-    // Debug log to check agent_sl_no value
-    console.log('Rendering deposit item:', item.id, 'Agent SL:', item.agent_sl_no, 'Type:', typeof item.agent_sl_no);
-    
     return (
       <View style={[styles.depositCard, { 
         backgroundColor: isDark ? '#1f2937' : '#fff',
@@ -697,14 +689,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   safeArea: {
-    backgroundColor: '#1e40af',
+    // Background color handled dynamically inline
   },
   header: {
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1e40af',
+    // Background color handled dynamically inline
   },
   headerButton: {
     width: 40,

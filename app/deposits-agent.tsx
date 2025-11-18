@@ -107,9 +107,7 @@ export default function AgentDepositsScreen() {
         per_page: pagination.perPage
       };
       
-      console.log('Loading agent deposits with params:', params);
       const response = await depositsService.getAgentDeposits(params);
-      console.log('Agent deposits response:', response);
       
       setDeposits(response.data || []);
       
@@ -133,7 +131,6 @@ export default function AgentDepositsScreen() {
       });
       
     } catch (error: any) {
-      console.error('Error loading agent deposits:', error);
       Alert.alert('Error', 'Failed to load agent deposits data');
     } finally {
       setLoading(false);
@@ -145,7 +142,7 @@ export default function AgentDepositsScreen() {
       const response = await marketService.getMarketList();
       setMarkets(response || []);
     } catch (error) {
-      console.error('Error loading markets:', error);
+      // Market loading failed silently
     }
   };
 
@@ -161,7 +158,6 @@ export default function AgentDepositsScreen() {
   };
 
   const handleReset = () => {
-    console.log('🔄 Reset clicked');
     const resetFilters = {
       from_date: '', // Clear dates so user can select any date range
       to_date: '',   // Clear dates so user can select any date range
@@ -172,7 +168,6 @@ export default function AgentDepositsScreen() {
       agent_type: 2 // Always 2 for Agent
     };
     
-    console.log('Reset filters:', resetFilters);
     setFilters(resetFilters);
     setDeposits([]); // Clear existing deposits
     
@@ -589,9 +584,6 @@ export default function AgentDepositsScreen() {
   );
 
   function renderDepositItem({ item }: { item: DepositItem }) {
-    // Debug log to check agent_sl_no value
-    console.log('Rendering deposit item:', item.id, 'Agent SL:', item.agent_sl_no, 'Type:', typeof item.agent_sl_no);
-    
     return (
       <View style={[styles.depositCard, { 
         backgroundColor: isDark ? '#1f2937' : '#fff',
