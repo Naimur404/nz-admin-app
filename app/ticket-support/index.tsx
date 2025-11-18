@@ -59,20 +59,26 @@ export default function TicketSupportScreen() {
   });
 
   // Filter states
-  const [filters, setFilters] = useState<TicketSupportFilters>({
-    agent_sl_or_name: '',
-    airline_name: '',
-    api_id: '',
-    booking_id_or_pnr: '',
-    from_date: '', // Start empty so user selects dates
-    market_id: '',
-    page: 1,
-    per_page: 20,
-    platform_type: '',
-    staff: null,
-    status: '',
-    ticket_no: '',
-    to_date: '',   // Start empty so user selects dates
+  const [filters, setFilters] = useState<TicketSupportFilters>(() => {
+    // Get today's date in local timezone
+    const today = new Date();
+    const localDate = today.toISOString().split('T')[0];
+    
+    return {
+      agent_sl_or_name: '',
+      airline_name: '',
+      api_id: '',
+      booking_id_or_pnr: '',
+      from_date: localDate, // Default to today's date
+      market_id: '',
+      page: 1,
+      per_page: 20,
+      platform_type: '',
+      staff: null,
+      status: '',
+      ticket_no: '',
+      to_date: localDate,   // Default to today's date
+    };
   });
 
   useEffect(() => {
@@ -270,13 +276,17 @@ export default function TicketSupportScreen() {
   };
 
   const handleReset = async () => {
-    // Clear all filters including dates - send empty strings to API
+    // Get today's date in local timezone
+    const today = new Date();
+    const localDate = today.toISOString().split('T')[0];
+    
+    // Reset filters with today's date as default
     const resetFilters: TicketSupportFilters = {
       agent_sl_or_name: '',
       airline_name: '',
       api_id: '',
       booking_id_or_pnr: '',
-      from_date: '', // Empty string for API
+      from_date: localDate, // Default to today's date
       market_id: '',
       page: 1,
       per_page: 20,
@@ -284,7 +294,7 @@ export default function TicketSupportScreen() {
       staff: null,
       status: '',
       ticket_no: '',
-      to_date: '',   // Empty string for API
+      to_date: localDate,   // Default to today's date
     };
     
     setTicketSupports([]);
