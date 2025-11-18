@@ -229,12 +229,12 @@ export default function HomeScreen() {
       submenuItems: [
         {
           title: 'Office Deposits',
-          route: '/deposits-office',
+          route: '/deposits/office',
           icon: 'business-outline',
         },
         {
           title: 'Agent Deposits',
-          route: '/deposits-agent',
+          route: '/deposits/agent',
           icon: 'person-outline',
         },
       ],
@@ -329,22 +329,22 @@ export default function HomeScreen() {
         } else if (route === '/reports/agent-account-statement') {
           console.log('Navigating to account statement');
           router.navigate('/reports/account-statement');
-        } else if (route === '/deposits-office') {
+        } else if (route === '/deposits/office') {
           console.log('Navigating to office deposits');
-          router.navigate('/deposits-office');
-        } else if (route === '/deposits-agent') {
+          router.navigate('/deposits/office');
+        } else if (route === '/deposits/agent') {
           console.log('Navigating to agent deposits');
-          router.navigate('/deposits-agent');
+          router.navigate('/deposits/agent');
         } else if (route.startsWith('/deposits?agent_type=')) {
           // Handle old format and convert to new format
           const agentType = route.includes('agent_type=1') ? 'office' : 'agent';
-          const newRoute = `/deposits-${agentType}`;
+          const newRoute = `/deposits/${agentType}`;
           console.log('Converting old route to new route:', route, '->', newRoute);
           router.navigate(newRoute as any);
         } else if (route.startsWith('/deposits?type=')) {
           // Handle old format from Alert.alert and convert to new format
           const agentType = route.includes('type=office') ? 'office' : 'agent';
-          const newRoute = `/deposits-${agentType}`;
+          const newRoute = `/deposits/${agentType}`;
           console.log('Converting old route to new route:', route, '->', newRoute);
           router.navigate(newRoute as any);
         } else {
