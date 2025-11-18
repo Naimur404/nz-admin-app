@@ -44,6 +44,7 @@ export default function OfficeDepositsScreen() {
   const [deposits, setDeposits] = useState<DepositItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [markets, setMarkets] = useState<any[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
@@ -54,13 +55,12 @@ export default function OfficeDepositsScreen() {
     total: 0,
     currentPage: 1,
     lastPage: 1,
-    perPage: 10,
+    perPage: 15,
   });
 
-  // Summary state
+  // Summary state - now supports multiple currencies
   const [summary, setSummary] = useState({
-    totalAmount: 0,
-    currency: 'MYR',
+    currencyTotals: {} as Record<string, number>,
     count: 0
   });
 
@@ -73,13 +73,10 @@ export default function OfficeDepositsScreen() {
 
   // Filter states - Fixed for Office (agent_type: 1)
   const [filters, setFilters] = useState<DepositFilters>(() => {
-    // Start with today's date like bus bookings for initial load
-    const today = new Date();
-    const localDate = today.toISOString().split('T')[0];
-    
+    const today = new Date().toISOString().split('T')[0];
     return {
-      from_date: localDate, // Default to today's date for initial load
-      to_date: localDate,   // Default to today's date for initial load
+      from_date: today, // Start with today's date on first load
+      to_date: today,   // Start with today's date on first load
       agent_id: '',
       status: '',
       market_id: '',
@@ -94,46 +91,80 @@ export default function OfficeDepositsScreen() {
     loadMarkets();
   }, []);
 
-  const loadDeposits = async (customFilters?: any) => {
-    if (loading) return;
+  const loadDeposits = async (isRefresh = false, isLoadMore = false) => {
+    if (loading || (isLoadMore && loadingMore)) return;
     
-    setLoading(true);
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
-      // Use custom filters if provided, otherwise use current filters
-      const currentFilters = customFilters || filters;
-      const params = {
-        ...currentFilters,
-        page: pagination.currentPage,
+      const currentPage = isLoadMore ? pagination.currentPage + 1 : (isRefresh ? 1 : pagination.currentPage);
+      
+      // Prepare parameters - remove empty date filters
+      const params: any = {
+        ...filters,
+        page: currentPage,
         per_page: pagination.perPage
       };
       
+      // Remove empty date filters so API doesn't receive empty strings
+      if (!params.from_date || params.from_date.trim() === '') {
+        delete params.from_date;
+      }
+      if (!params.to_date || params.to_date.trim() === '') {
+        delete params.to_date;
+      }
+      
       const response = await depositsService.getOfficeDeposits(params);
       
-      setDeposits(response.data || []);
+      let allDeposits: DepositItem[] = [];
+      
+      if (isLoadMore) {
+        // Append new data for infinite scroll
+        allDeposits = [...deposits, ...(response.data || [])];
+        setDeposits(allDeposits);
+      } else {
+        // Replace data for refresh or new search
+        allDeposits = response.data || [];
+        setDeposits(allDeposits);
+      }
       
       // Update pagination
       setPagination({
         total: response.dataCount || 0,
-        currentPage: response.current_page || 1,
+        currentPage: currentPage,
         lastPage: response.last_page || 1,
         perPage: pagination.perPage,
       });
       
-      // Calculate summary
-      const totalAmount = response.data?.reduce((sum, item) => {
-        return sum + parseFloat(item.amount || '0');
-      }, 0) || 0;
+      // Calculate summary with multiple currencies
+      const currencyTotals: Record<string, number> = {};
+      
+      allDeposits.forEach((item) => {
+        const currency = item.currency || 'USD';
+        const amount = parseFloat(item.amount || '0');
+        currencyTotals[currency] = (currencyTotals[currency] || 0) + amount;
+      });
       
       setSummary({
-        totalAmount,
-        currency: response.data?.[0]?.currency || 'MYR',
-        count: response.data?.length || 0
+        currencyTotals,
+        count: allDeposits.length
       });
       
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load office deposits data');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreDeposits = () => {
+    if (pagination.currentPage < pagination.lastPage && !loadingMore) {
+      loadDeposits(false, true);
     }
   };
 
@@ -148,7 +179,9 @@ export default function OfficeDepositsScreen() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadDeposits().finally(() => setRefreshing(false));
+    // Reset pagination for refresh
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    loadDeposits(true).finally(() => setRefreshing(false));
   };
 
   const handleSearch = () => {
@@ -157,10 +190,11 @@ export default function OfficeDepositsScreen() {
     loadDeposits();
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // Clear all filters (including dates)
     const resetFilters = {
-      from_date: '', // Clear dates so user can select any date range
-      to_date: '',   // Clear dates so user can select any date range
+      from_date: '', // Clear the date to show all records
+      to_date: '',   // Clear the date to show all records
       agent_id: '',
       status: '',
       market_id: '',
@@ -168,8 +202,11 @@ export default function OfficeDepositsScreen() {
       agent_type: 1 // Always 1 for Office
     };
     
+    // Update filters first to clear form
     setFilters(resetFilters);
-    setDeposits([]); // Clear existing deposits
+    
+    // Clear existing deposits
+    setDeposits([]);
     
     // Reset pagination
     setPagination({
@@ -179,14 +216,66 @@ export default function OfficeDepositsScreen() {
       perPage: 15,
     });
     
+    // Reset summary
+    setSummary({
+      currencyTotals: {},
+      count: 0
+    });
+    
     // Close any open date pickers
     setShowFromDatePicker(false);
     setShowToDatePicker(false);
     
-    // Automatically search with empty filters
-    setTimeout(() => {
-      loadDeposits(resetFilters);
-    }, 100);
+    // Load data with cleared filters immediately
+    try {
+      setLoading(true);
+      
+      // Prepare params, removing empty date fields
+      const params: any = {
+        ...resetFilters,
+        page: 1,
+        per_page: 15
+      };
+      
+      if (!params.from_date || params.from_date.trim() === '') {
+        delete params.from_date;
+      }
+      if (!params.to_date || params.to_date.trim() === '') {
+        delete params.to_date;
+      }
+      
+      const response = await depositsService.getOfficeDeposits(params);
+      
+      const allDeposits = response.data || [];
+      setDeposits(allDeposits);
+      
+      // Update pagination
+      setPagination({
+        total: response.dataCount || 0,
+        currentPage: 1,
+        lastPage: response.last_page || 1,
+        perPage: 15,
+      });
+
+      // Calculate summary with multiple currencies
+      const currencyTotals: Record<string, number> = {};
+      
+      allDeposits.forEach((deposit) => {
+        const currency = deposit.currency || 'MYR';
+        const amount = parseFloat(deposit.amount) || 0;
+        currencyTotals[currency] = (currencyTotals[currency] || 0) + amount;
+      });
+
+      setSummary({
+        currencyTotals,
+        count: allDeposits.length
+      });
+      
+    } catch (error) {
+      console.error('Error loading deposits:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDateChange = (event: any, selectedDate: Date | undefined, type: 'from' | 'to') => {
@@ -460,9 +549,19 @@ export default function OfficeDepositsScreen() {
             <Text style={[styles.summaryTitle, { color: isDark ? '#f3f4f6' : '#1f2937' }]}>
               Topup Request - {summary.count}
             </Text>
-            <Text style={[styles.summaryAmount, { color: isDark ? '#10b981' : '#059669' }]}>
-              Total Amount: {summary.currency} {summary.totalAmount.toLocaleString()}
-            </Text>
+            <View style={styles.currencyTotalsContainer}>
+              {Object.keys(summary.currencyTotals).length > 0 ? (
+                Object.entries(summary.currencyTotals).map(([currency, amount]) => (
+                  <Text key={currency} style={[styles.summaryAmount, { color: isDark ? '#10b981' : '#059669' }]}>
+                    {currency} {amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                ))
+              ) : (
+                <Text style={[styles.summaryAmount, { color: isDark ? '#10b981' : '#059669' }]}>
+                  Total Amount: 0.00
+                </Text>
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -498,6 +597,18 @@ export default function OfficeDepositsScreen() {
               tintColor={isDark ? '#3b82f6' : '#1e40af'}
             />
           }
+          onEndReached={loadMoreDeposits}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={() => (
+            loadingMore ? (
+              <View style={styles.loadMoreContainer}>
+                <ActivityIndicator size="small" color={isDark ? '#3b82f6' : '#1e40af'} />
+                <Text style={[styles.loadMoreText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
+                  Loading more...
+                </Text>
+              </View>
+            ) : null
+          )}
         />
       )}
 
@@ -1021,5 +1132,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // New styles for currency totals and infinite scroll
+  currencyTotalsContainer: {
+    marginTop: 4,
+  },
+  loadMoreContainer: {
+    padding: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
